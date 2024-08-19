@@ -34,6 +34,26 @@ class Racing_Wheel:
             joystick.init()
         return self.joysticks
     
+    def Return_Input(self):
+        for event in pygame.event.get():
+            if event.type == pygame.JOYAXISMOTION:
+                if event.axis == 0:        #Handle
+                    return event.value
+                elif event.axis == 2:      #Brake
+                    return event.value
+                elif event.axis == 5:      #Accel
+                    return event.value
+            elif event.type == pygame.JOYBUTTONDOWN:
+                if event.button == 0:
+                    return 0
+                elif event.button == 1:
+                    return 1
+                elif event.button == 2:
+                    return 2
+                elif event.button == 3:
+                    return 3
+        
+    
     def Print_Input(self):
         for event in pygame.event.get():
             if event.type == pygame.JOYAXISMOTION:
