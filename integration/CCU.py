@@ -1,5 +1,10 @@
 #import
+import sys, os
+sys.path.append(os.path.dirname(os.path.dirname(__path__)))
 
+from HeartBeat import BPM as bpm
+# from ACPE
+# from Window
 
 #Set Constant Values
 
@@ -8,7 +13,7 @@
 try:
     #INIT VALUES
     #Set Class
-
+    
     
     print("START PROCESSING")
     while True:

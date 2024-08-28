@@ -42,12 +42,13 @@ def calculate_bpm(peaks, calibration_factor=60):
 
 def monitor_sensor(sensor_type, channel, threshold, min_interval, alpha, calibration_factor):
     #변수 초기화
+    global adc, ppg, ecg
     adc = MCP3208()
     peaks = []
     count_bpm = 0
     avg_bpm = 0
     tot_bpm = 0
-    filtered_bpm = 0  
+    filtered_bpm = 0
 
     
     def read_and_process():
@@ -77,39 +78,45 @@ def monitor_sensor(sensor_type, channel, threshold, min_interval, alpha, calibra
         print(f"{sensor_type} Voltage: {voltage:.2f} V")
 
     try:
-        while True:
-            read_and_process()
-            time.sleep(0.1)
+        #read one time
+        read_and_process()
 
     except KeyboardInterrupt:
         adc.close()
         print(f"{sensor_type} monitoring stopped.")
 
 
-def Get_Bpm():
-    #캘리브레이션 요소 
-        #ppg
-    ppg_channel = 0
-    ppg_threshold = 0.9
-    ppg_min_interval = 2.0
-    ppg_alpha = 0.75
-    ppg_calibration_factor = 240
-
-        #ecg
-    ecg_channel = 1
-    ecg_threshold = 1.8
-    ecg_min_interval = 2.0
-    ecg_alpha = 0.75
-    ecg_calibration_factor = 240
-
+def Get_Bpm_Data(
+    ppg_ch = 0, ppg_thd = 0.9, ppg_min_intv = 2.0, ppg_A = 0.75, ppg_cal_fact = 240,
+    ecg_ch = 1, ecg_thd = 1.8, ecg_min_intv = 2.0, ecg_A = 0.75, ecg_cal_fact = 240):
+    '''
+    BPM 데이터를 받아오는 함수입니다
+    
+    Args : 캘리브레이션 요소, ppg, ecg 각각 존재
+        channel = _ch
+        threshold = _thd
+        minimum_interval = min_intv
+        alpha = _A
+        calibration_factor = cal_fact
+    
+    Returns : PPG and ECG Values
+    
+    '''
+    
     # 쓰레딩으로 두개 센서 데이터 한 번에 수집 
-    ppg_thread = threading.Thread(target=monitor_sensor, args=("PPG", ppg_channel, ppg_threshold, ppg_min_interval, ppg_alpha, ppg_calibration_factor))
-    ecg_thread = threading.Thread(target=monitor_sensor, args=("ECG", ecg_channel, ecg_threshold, ecg_min_interval, ecg_alpha, ecg_calibration_factor))
+    ppg_thread = threading.Thread(
+        target=monitor_sensor, args=("PPG", ppg_ch, ppg_thd, ppg_min_intv, ppg_A, ppg_cal_fact))
+
+    ecg_thread = threading.Thread(
+        target=monitor_sensor, args=("ECG", ecg_ch, ecg_thd, ecg_min_intv, ecg_A, ecg_cal_fact))
+
 
     # 스레딩 시작
     ppg_thread.start()
     ecg_thread.start()
 
-    # 두 쓰레기 끝날대 까지 기다리기
+    # 두 스레드 끝날대 까지 기다리기
     ppg_thread.join()
     ecg_thread.join()
+    
+    return ppg, ecg
