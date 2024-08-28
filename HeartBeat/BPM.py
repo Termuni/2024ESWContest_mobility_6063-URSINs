@@ -1,3 +1,11 @@
+'''
+Functions That Could Be Used
+1. Init_BPM() => Setting Values for Global
+2. Get_BPM_Data(
+    ppg_ch = 0, ppg_thd = 0.9, ppg_min_intv = 2.0, ppg_A = 0.75, ppg_cal_fact = 240,
+    ecg_ch = 1, ecg_thd = 1.8, ecg_min_intv = 2.0, ecg_A = 0.75, ecg_cal_fact = 240)
+    => Getting BPM Data by setting each values
+'''
 import time
 import threading
 from spidev import SpiDev
@@ -13,7 +21,7 @@ class MCP3208:
             MCP3208._spi.open(self.bus, self.device)
             MCP3208._spi.max_speed_hz = 1000000  # 1MHz
 
-    def read(self, channel=0):
+    def Read(self, channel=0):
         assert 0 <= channel <= 7, "Channel must be between 0 and 7"
         cmd1 = 6 | (channel >> 2)
         cmd2 = (channel & 3) << 6
@@ -21,17 +29,19 @@ class MCP3208:
         data = ((adc[1] & 15) << 8) + adc[2]
         return data
 
-    def close(self):
+    def Close(self):
         if MCP3208._spi:
             MCP3208._spi.close()
             MCP3208._spi = None
 
+
 #low pass filter
-def low_pass_filter(data, alpha, prev_filtered_data):
+def Low_Pass_Filter(data, alpha, prev_filtered_data):
     return alpha * data + (1 - alpha) * prev_filtered_data
 
+
 #bpm 계산법
-def calculate_bpm(peaks, calibration_factor=60):
+def Calculate_BPM(peaks, calibration_factor=60):
     if len(peaks) < 2:
         return 0
     intervals = [t - s for s, t in zip(peaks, peaks[1:])]
@@ -40,58 +50,96 @@ def calculate_bpm(peaks, calibration_factor=60):
     return int(bpm)
 
 
-def monitor_sensor(sensor_type, channel, threshold, min_interval, alpha, calibration_factor):
+#Init BPM Values
+def Init_BPM():
     #변수 초기화
-    global adc, ppg, ecg
-    if (str(isinstance(adc))) != "MCP3208":
-        adc = MCP3208()
+    global p_adc, e_adc
+    global ppg_peaks, ppg_count_bpm, ppg_avg_bpm, ppg_tot_bpm, ppg_filtered_bpm
+    global ecg_peaks, ecg_count_bpm, ecg_avg_bpm, ecg_tot_bpm, ecg_filtered_bpm
     
-    peaks = []
-    count_bpm = 0
-    avg_bpm = 0
-    tot_bpm = 0
-    filtered_bpm = 0
-    
-    def read_and_process():
-        #아날로그값 측정
-        nonlocal count_bpm, avg_bpm, tot_bpm, filtered_bpm, peaks
-        value = adc.read(channel)
-        voltage = (value * 3.3) / 4096
-        current_time = time.time()
-
-        #임계값 넘어가면 피크 측정통해 bpm 계산
-        if voltage > threshold:
-            if len(peaks) == 0 or (current_time - peaks[-1]) > min_interval:
-                peaks.append(current_time)
-                if len(peaks) > 10:
-                    peaks.pop(0)
-                bpm = calculate_bpm(peaks, calibration_factor)
-                filtered_bpm = low_pass_filter(bpm, alpha, filtered_bpm)
-                
-                if filtered_bpm != 0:
-                    count_bpm += 1
-                    tot_bpm += filtered_bpm
-                    avg_bpm = tot_bpm / count_bpm
-
-                print(f"{sensor_type} - BPM: {bpm:.2f}, Count: {count_bpm}, Avg BPM: {avg_bpm:.2f}")
-                print(f"{sensor_type} - Filtered BPM: {filtered_bpm:.2f}")
+    if (isinstance(p_adc, MCP3208) == False):
+        p_adc = MCP3208()
+        ppg_peaks = []
+        ppg_count_bpm = 0
+        ppg_avg_bpm = 0
+        ppg_tot_bpm = 0
+        ppg_filtered_bpm = 0
         
-        print(f"{sensor_type} Voltage: {voltage:.2f} V")
-
-    try:
-        #read one time
-        read_and_process()
-
-    except KeyboardInterrupt:
-        adc.close()
-        print(f"{sensor_type} monitoring stopped.")
+    if (isinstance(e_adc, MCP3208) == False):
+        e_adc = MCP3208()
+        ecg_peaks = []
+        ecg_count_bpm = 0
+        ecg_avg_bpm = 0
+        ecg_tot_bpm = 0
+        ecg_filtered_bpm = 0
 
 
-def Get_Bpm_Data(
+# Getting Value : Peak, BPM
+def Get_Values_For_Monitor_Sensor(sensor_type, channel):
+    global p_adc, ppg_peaks, ppg_count_bpm, ppg_avg_bpm, ppg_tot_bpm, ppg_filtered_bpm
+    global e_adc, ecg_peaks, ecg_count_bpm, ecg_avg_bpm, ecg_tot_bpm, ecg_filtered_bpm
+    
+    if sensor_type == "PPG":
+        value = p_adc.Read(channel)
+        return value, ppg_peaks, ppg_count_bpm, ppg_avg_bpm, ppg_tot_bpm, ppg_filtered_bpm
+    
+    elif sensor_type == "ECG":
+        value = e_adc.Read(channel)
+        return ecg_peaks, ecg_count_bpm, ecg_avg_bpm, ecg_tot_bpm, ecg_filtered_bpm
+    
+    
+# Setting Value : Peak, BPM
+def Set_Values_After_Monirot_Sensor(sensor_type, peaks, count_bpm, avg_bpm, tot_bpm, filtered_bpm):
+    
+    global ppg_peaks, ppg_count_bpm, ppg_avg_bpm, ppg_tot_bpm, ppg_filtered_bpm
+    global ecg_peaks, ecg_count_bpm, ecg_avg_bpm, ecg_tot_bpm, ecg_filtered_bpm
+    
+    if sensor_type == "PPG":
+        ppg_peaks = peaks
+        ppg_count_bpm = count_bpm
+        ppg_avg_bpm = avg_bpm
+        ppg_tot_bpm = tot_bpm
+        ppg_filtered_bpm = filtered_bpm
+    
+    elif sensor_type == "ECG":
+        ecg_peaks = peaks
+        ecg_count_bpm = count_bpm
+        ecg_avg_bpm = avg_bpm
+        ecg_tot_bpm = tot_bpm
+        ecg_filtered_bpm = filtered_bpm
+
+
+def Monitor_Sensor(sensor_type, channel, threshold, min_interval, alpha, calibration_factor):
+    # 아날로그값 측정
+    value, peaks, count_bpm, avg_bpm, tot_bpm, filtered_bpm = Get_Values_For_Monitor_Sensor(sensor_type, channel)
+    voltage = (value * 3.3) / 4096
+    current_time = time.time()
+
+    #임계값 넘어가면 피크 측정통해 bpm 계산
+    if voltage > threshold:
+        if len(peaks) == 0 or (current_time - peaks[-1]) > min_interval:
+            peaks.append(current_time)
+            if len(peaks) > 10:
+                peaks.pop(0)
+            bpm = Calculate_BPM(peaks, calibration_factor)
+            filtered_bpm = Low_Pass_Filter(bpm, alpha, filtered_bpm)
+            
+            if filtered_bpm != 0:
+                count_bpm += 1
+                tot_bpm += filtered_bpm
+                avg_bpm = tot_bpm / count_bpm
+
+    Set_Values_After_Monirot_Sensor(sensor_type, peaks, count_bpm, avg_bpm, tot_bpm, filtered_bpm)
+
+
+
+def Get_BPM_Data(
     ppg_ch = 0, ppg_thd = 0.9, ppg_min_intv = 2.0, ppg_A = 0.75, ppg_cal_fact = 240,
     ecg_ch = 1, ecg_thd = 1.8, ecg_min_intv = 2.0, ecg_A = 0.75, ecg_cal_fact = 240):
     '''
     BPM 데이터를 받아오는 함수입니다
+    Init_BPM 함수가 실행되어 있지 않다면, 실행되지 않습니다.
+    (함수 내부에서 Init_BPM을 진행하나, 권장하지 않습니다)
     
     Args : 캘리브레이션 요소, ppg, ecg 각각 존재
         channel = _ch
@@ -101,23 +149,38 @@ def Get_Bpm_Data(
         calibration_factor = cal_fact
     
     Returns : PPG and ECG Values
-    
     '''
+    #If You want, You can use these values
+    global p_adc, e_adc
+    global ppg_peaks, ppg_count_bpm, ppg_avg_bpm, ppg_tot_bpm, ppg_filtered_bpm
+    global ecg_peaks, ecg_count_bpm, ecg_avg_bpm, ecg_tot_bpm, ecg_filtered_bpm
     
-    # 쓰레딩으로 두개 센서 데이터 한 번에 수집 
-    ppg_thread = threading.Thread(
-        target=monitor_sensor, args=("PPG", ppg_ch, ppg_thd, ppg_min_intv, ppg_A, ppg_cal_fact))
-
-    ecg_thread = threading.Thread(
-        target=monitor_sensor, args=("ECG", ecg_ch, ecg_thd, ecg_min_intv, ecg_A, ecg_cal_fact))
-
-
-    # 스레딩 시작
-    ppg_thread.start()
-    ecg_thread.start()
-
-    # 두 스레드 끝날대 까지 기다리기
-    ppg_thread.join()
-    ecg_thread.join()
+    if (isinstance(p_adc, MCP3208) == False) or (isinstance(e_adc, MCP3208) == False):
+        Init_BPM()
+        return 0, 0
     
-    return ppg, ecg
+    try:        
+        # 쓰레딩으로 두개 센서 데이터 한 번에 수집 
+        ppg_thread = threading.Thread(
+            target=Monitor_Sensor, 
+            args=("PPG", ppg_ch, ppg_thd, ppg_min_intv, ppg_A, ppg_cal_fact))
+
+        ecg_thread = threading.Thread(
+            target=Monitor_Sensor, 
+            args=("ECG", ecg_ch, ecg_thd, ecg_min_intv, ecg_A, ecg_cal_fact))
+
+        # 스레딩 시작
+        ppg_thread.start()
+        ecg_thread.start()
+
+        # 두 스레드 끝날대 까지 기다리기
+        ppg_thread.join()
+        ecg_thread.join()
+        
+    except KeyboardInterrupt:
+        p_adc.Close()
+        e_adc.Close()
+        print("monitoring stopped")
+    
+
+    return ppg_avg_bpm, ecg_avg_bpm
