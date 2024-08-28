@@ -1,0 +1,18 @@
+좌/우 확인
+→ Event 중 joy : 0, axis : 0, value : -1~1 (조이스틱 왼쪽)
+
+→ Hat으로 들어옴, Value : (0,0)(idle) (-1, 0)(left) (1, 0)(right) (0, -1)(bottom) (0, 1)(top)
+
+→ A, B, X, Y 순으로 Button 0~3, Down/Up 구분하여 받을 수 있음
+
+그 외 페달
+
+→ 브레이크(왼쪽) : Axis 2, -1~1 입력
+
+→ 엑셀(오른쪽) : Axis 5, -1~1 입력
+
+기어봉
+
+→ L2(당기는 방향) : Button 4
+
+→ R2(미는 방향) : Button 5
