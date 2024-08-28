@@ -43,13 +43,14 @@ def calculate_bpm(peaks, calibration_factor=60):
 def monitor_sensor(sensor_type, channel, threshold, min_interval, alpha, calibration_factor):
     #변수 초기화
     global adc, ppg, ecg
-    adc = MCP3208()
+    if (str(isinstance(adc))) != "MCP3208":
+        adc = MCP3208()
+    
     peaks = []
     count_bpm = 0
     avg_bpm = 0
     tot_bpm = 0
     filtered_bpm = 0
-
     
     def read_and_process():
         #아날로그값 측정

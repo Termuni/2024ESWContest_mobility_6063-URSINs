@@ -16,7 +16,7 @@ try:
         
             #Show Inside CAM
         
-            #Receive Sound Data from TCU?
+            #Receive Sound Data from TCU? -> SUB
         
         
         
@@ -26,7 +26,7 @@ try:
         
             #Sending Handle Data
         
-            #Sending Sound Data?
+            #Sending Sound Data? -> SUB
         
         
         

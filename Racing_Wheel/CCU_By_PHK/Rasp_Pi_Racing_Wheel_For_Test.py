@@ -1,5 +1,5 @@
 import RPi.GPIO as GPIO #RPi.GPIO 라이브러리를 GPIO로 사용
-import socket_phk_v3
+import Racing_Wheel.RcVehicleCode_phk_240822.test_phk_240821_0958_Motor_Socket.TCU_Socket_Receive as TCU_Socket_Receive
 from time import sleep  #time 라이브러리의 sleep함수 사용
 import time
 GPIO.setmode(GPIO.BCM) #Pin Mode : GPIO
@@ -59,10 +59,10 @@ def setServoPos(Servo_degree):
 
 
 try :
-    conn = socket_phk_v3.start_server()
+    conn = TCU_Socket_Receive.start_server()
     while True :
         print("Running...")
-        Handle_Degree, GoMotor_duty, Pedal_Brake = socket_phk_v3.while_server(conn) # RacingWheel_Signal from Socket
+        Handle_Degree, GoMotor_duty, Pedal_Brake = TCU_Socket_Receive.while_server(conn) # RacingWheel_Signal from Socket
         print("Handle   Degree: ",Handle_Degree)
         Servo_Degree = int((-Handle_Degree/2)+90)  #   -90 to 90  ==>  90 to -90  ==>  45 to 135
         print("Servo    Degree: ",Servo_Degree)

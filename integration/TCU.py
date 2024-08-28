@@ -30,7 +30,7 @@ try:
         
             #Sending Handling Data to CCU
             
-            #Get Data from Center?
+            #Get Data from Center? -> Get What?
         
         
         

@@ -31,21 +31,22 @@ try:
             #Remote Off
         
         
-        #If Warning LV 2
-            #Sound Output? LED ON?
+        #Elif Warning LV 2
+            #Sound Output
+            #LED ON
             #Remote Off
         
         
-        #If Warning LV 3
+        #Elif Warning LV 3
             #Remote On
         
         
         #If Remote OFF
-            #Set Data by CCU
+            #Set Motor Data by CCU
         
         
         #Else Remote ON
-            #Get Data from TCU
+            #Get Motor Data from TCU
         
         
         #If There Is Nothing Blocking Front

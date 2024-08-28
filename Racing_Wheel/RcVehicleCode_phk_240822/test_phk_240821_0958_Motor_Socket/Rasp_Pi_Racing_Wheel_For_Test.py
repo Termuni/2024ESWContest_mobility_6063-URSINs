@@ -1,33 +1,38 @@
 import RPi.GPIO as GPIO #RPi.GPIO 라이브러리를 GPIO로 사용
+import Racing_Wheel.RcVehicleCode_phk_240822.test_phk_240821_0958_Motor_Socket.TCU_Socket_Receive as TCU_Socket_Receive
 from time import sleep  #time 라이브러리의 sleep함수 사용
+import time
 GPIO.setmode(GPIO.BCM) #Pin Mode : GPIO
 #GPIO.setmode(GPIO.BOARD)  #Pin Mode : BOARD
 
+# sudo service uv4l_raspicam restart
+
+
 #===============[Setup_Servo Motor]====================
-GPIOPIN_Servo     = 12   # 서보모터 핀
-SERVO_MAX_DUTY    = 12   # 서보의 최대(180도) 위치의 주기
+GPIOPIN_Servo     = 16   # 서보 핀 (GPIO)
+SERVO_MAX_DUTY    = 12   # 서보의 최대(180도) 위치의 주기 
 SERVO_MIN_DUTY    = 3    # 서보의 최소(0도) 위치의 주기
 GPIO.setup(GPIOPIN_Servo, GPIO.OUT)  # 서보핀 출력으로 설정
 servo = GPIO.PWM(GPIOPIN_Servo, 50)  # 서보핀을 PWM 모드 50Hz로 사용하기 (50Hz > 20ms)
 servo.start(0)  # 서보 PWM 시작 duty = 0, duty가 0이면 서보는 동작하지 않는다.
+Servo_Degree = 0 # 0 to 180
 
 
-
-#===============[Setup_DC Motor]====================
-MOTER_A_A1=20 # DC모터 핀1 
-MOTER_A_B1=21 # DC모터 핀2 
+#===============[Setup_Go Motor]====================
+MOTER_A_A1=20 # Go_Motor_A1 Pin Number (GPIO)
+MOTER_A_B1=21 # Go_Motor_B1 Pin Number (GPIO)
 
 GPIO.setup(MOTER_A_A1,GPIO.OUT)
 GPIO.setup(MOTER_A_B1,GPIO.OUT)
 MOTER_A_A1_PWM=GPIO.PWM(MOTER_A_A1,20)
 MOTER_A_A1_PWM.start(0)
+GPIO.output(MOTER_A_A1,GPIO.LOW)
 GPIO.output(MOTER_A_B1,GPIO.LOW)
-GPIO.output(MOTER_B_B1,GPIO.LOW)
+GoMotor_duty = 0  # 0 to 100
 
 
 
-DcMotor_Power = 0  # 0 to 100
-Servo_Degree = 0 # 0 to 180
+
 
 
 
@@ -54,16 +59,28 @@ def setServoPos(Servo_degree):
 
 
 try :
+    conn = TCU_Socket_Receive.start_server()
     while True :
-        #MOTER_A_A1_PWM.ChangeDutyCycle(DcMotor_Power)
-        #setServoPos(Servo_Degree)
-        print("DC Motor Power : ",DcMotor_Power)
+        print("Running...")
+        Handle_Degree, GoMotor_duty, Pedal_Brake = TCU_Socket_Receive.while_server(conn) # RacingWheel_Signal from Socket
+        print("Handle   Degree: ",Handle_Degree)
+        Servo_Degree = int((-Handle_Degree/2)+90)  #   -90 to 90  ==>  90 to -90  ==>  45 to 135
         print("Servo    Degree: ",Servo_Degree)
+        print("DC Motor Power : ",GoMotor_duty)
+        print("Pedal_Brake : ",Pedal_Brake)
+        
+        if Pedal_Brake != 0:  # if Press Brake: DCmotor = 0
+            GoMotor_duty = 0
+        
+        MOTER_A_A1_PWM.ChangeDutyCycle(GoMotor_duty)
+        setServoPos(Servo_Degree)
+
+        
         print("")
-        time.sleep(0.5)
-        #print("Running...")
+
+        
 finally :
     MOTER_A_A1_PWM.stop()
-    MOTER_B_A1_PWM.stop()
+
     GPIO.cleanup()
 
