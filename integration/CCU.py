@@ -10,14 +10,23 @@ try:
     #Set Class
 
     
+    print("START PROCESSING")
     while True:
-        #if Debug Mode
+        #If Debug Mode
         print("DEBUG MODE ACTIVATE")
-        #else Getting Sensor Value
+        #Else Getting Sensor Value
         print("DEBUG MODE DEACTIVATE")
         
-        #
-        print("IN PROCESSING")
+        #Calculate By Algorithm
+        
+        #If Remote OFF
+        
+        #Else Remote ON
+        
+        #If There Is Nothing Blocking Front
+        
+        #Else Something Blocking Front
+        print("ACPE ACTIVE")
         
 except:
     print("END")
