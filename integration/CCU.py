@@ -8,12 +8,14 @@ from HeartBeat import BPM as bpm
 
 #Set Constant Values
 
+def Init():
+    bpm.Init_BPM()
+
 #====================Main==================
 
 try:
     #INIT VALUES
     #Set Class
-    
     
     print("START PROCESSING")
     while True:
@@ -22,6 +24,7 @@ try:
         
         #Else Getting Sensor Value
         print("DEBUG MODE DEACTIVATE")
+        bpm.Get_BPM_Data()                  #What You can use : bpm.ppg_avg_bpm / bpm_ecg_avg_bpm
         
         #Warning Lv Calculate By Algorithm
         

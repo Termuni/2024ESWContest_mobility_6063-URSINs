@@ -183,4 +183,4 @@ def Get_BPM_Data(
         print("monitoring stopped")
     
 
-    return ppg_avg_bpm, ecg_avg_bpm
+    #return ppg_avg_bpm, ecg_avg_bpm
