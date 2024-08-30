@@ -4,6 +4,7 @@ from spidev import SpiDev
 
 class MCP3208:
     _spi = None
+    #test 주석
 
     def __init__(self, bus=0, device=0):
         self.bus, self.device = bus, device
