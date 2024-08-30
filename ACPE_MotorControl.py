@@ -8,6 +8,7 @@ from pygame.locals import *
 
 GPIO.setmode(GPIO.BCM) #Pin Mode : GPIO
 #GPIO.setmode(GPIO.BOARD)  #Pin Mode : BOARD
+#test
 global DcMotor_Power
 
 class Communication_Remote_Center:
