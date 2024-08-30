@@ -112,45 +112,58 @@ def Monitor_Sensor(sensor_type, channel, threshold, min_interval, alpha, calibra
     voltage = (value * 3.3) / 4096
     current_time = time.time()
 
-    #임계값 넘어가면 피크 측정통해 bpm 계산
-    if voltage > threshold:
-        if (len(peaks) == 0) or ((current_time - peaks[-1]) > min_interval):
-            peaks.append(current_time)
-            if len(peaks) > 10:
-                peaks.pop(0)
-            bpm = Calculate_BPM(peaks, calibration_factor)
-            filtered_bpm = Low_Pass_Filter(bpm, alpha, filtered_bpm)
-            
-            #code trans start
-            if filtered_bpm != 0:
-                count_zero_bpm = 0 #zero count goto 0
-                count_bpm += 1
+    def Read_N_Process():
+        nonlocal value, peaks, count_bpm, avg_bpm, tot_bpm, filtered_bpm, bpm_level, voltage, current_time
+        #임계값 넘어가면 피크 측정통해 bpm 계산
+        if voltage > threshold:
+            if (len(peaks) == 0) or ((current_time - peaks[-1]) > min_interval):
+                peaks.append(current_time)
+                if len(peaks) > 10:
+                    peaks.pop(0)
+                bpm = Calculate_BPM(peaks, calibration_factor)
+                filtered_bpm = Low_Pass_Filter(bpm, alpha, filtered_bpm)
                 
-                if count_bpm != 0:
+                #code trans start
+                if filtered_bpm != 0:
+                    count_zero_bpm = 0 #zero count goto 0
+                    count_bpm += 1
                     
-                    tot_bpm += filtered_bpm
-                    avg_bpm = (tot_bpm / count_bpm)
-                    bpm_level = 1
+                    if count_bpm != 0:
                         
-                    if count_bpm >= 20:  #compare with avg_bpm satisfy -> level 2
-                        if ((abs((avg_bpm)-(filtered_bpm))/avg_bpm)*100) >= 5:
-                            bpm_level = 2
-                        
-            print(f"{sensor_type} - BPM: {filtered_bpm:.2f}, Count: {count_bpm}, Avg BPM: {avg_bpm:.2f}")
-                
-    else:
-        count_zero_bpm += 1 # bpm zero count
-        print(f"{sensor_type} - zero count : {count_zero_bpm} \n")
-        if count_zero_bpm >= 100: # if bpm zero count 100 -> level 3
-            bpm_level = 3
-            if sensor_type == "PPG":
-                print(f"ppg bpm level = {ppg_bpm_level}")
-            elif sensor_type == "ECG":
-                print(f"ecg bpm level = {ecg_bpm_level}")
-            #associated with PIG sensor can increase accuracy         
-    print(f"{sensor_type} Voltage: {voltage:.2f} V, BPM Level: {bpm_level}")
+                        tot_bpm += filtered_bpm
+                        avg_bpm = (tot_bpm / count_bpm)
+                        bpm_level = 1
+                            
+                        if count_bpm >= 20:  #compare with avg_bpm satisfy -> level 2
+                            if ((abs((avg_bpm)-(filtered_bpm))/avg_bpm)*100) >= 5:
+                                bpm_level = 2
+                            
+                print(f"{sensor_type} - BPM: {filtered_bpm:.2f}, Count: {count_bpm}, Avg BPM: {avg_bpm:.2f}")
+                    
+        else:
+            count_zero_bpm += 1 # bpm zero count
+            print(f"{sensor_type} - zero count : {count_zero_bpm} \n")
+            if count_zero_bpm >= 100: # if bpm zero count 100 -> level 3
+                bpm_level = 3
+                if sensor_type == "PPG":
+                    print(f"ppg bpm level = {ppg_bpm_level}")
+                elif sensor_type == "ECG":
+                    print(f"ecg bpm level = {ecg_bpm_level}")
+                #associated with PIG sensor can increase accuracy         
+        Set_Values_After_Monitor_Sensor(sensor_type, peaks, count_bpm, avg_bpm, tot_bpm, filtered_bpm, bpm_level)
+        print(f"{sensor_type} Voltage: {voltage:.2f} V, BPM Level: {bpm_level}")
+    
+    try:
+        while True:
+            Read_N_Process()
+            time.sleep(0.05)
+            
+    except KeyboardInterrupt:
+        p_adc.close()
+        e_adc.close()
+        print(f"{sensor_type} monitoring stopped.")
 
-    Set_Values_After_Monitor_Sensor(sensor_type, peaks, count_bpm, avg_bpm, tot_bpm, filtered_bpm, bpm_level)
+    
 
 
 
@@ -208,8 +221,7 @@ def Get_BPM_Data(
     
 def main():
     Init_BPM()
-    while True:
-        Get_BPM_Data()
+    Get_BPM_Data()
     
 if __name__ == '__main__':
     main()
