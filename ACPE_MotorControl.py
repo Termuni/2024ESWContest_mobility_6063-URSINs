@@ -1,36 +1,29 @@
-import RPi.GPIO as GPIO #RPi.GPIO 라이브러리를 GPIO로 사용
-#from time import sleep  #time 라이브러리의 sleep함수 사용
+import RPi.GPIO as GPIO 
 import time
 import sys
 import pygame
 from pygame.locals import *
 
-
 GPIO.setmode(GPIO.BCM) #Pin Mode : GPIO
 #GPIO.setmode(GPIO.BOARD)  #Pin Mode : BOARD
-#test
-global DcMotor_Power
 
 class Communication_Remote_Center:
     '''
-    항상 통신은 유지되어야 함. 
-    데이터 패킷: mode, 조향각, 페달
-    mode가 바뀐다면 Switch_Mode(바뀐 mode) 실행할 것
+    원격 센터로부터의 제어 정보(패킷)을 수신하고 해석하기 위한 클래스
+    manual 제어 모드에서도 통신은 유지되어야 하며 데이터 패킷 구성은 다음과 같다.(mode, 조향각, 페달)
     '''
+    #====================[INIT]========================
     def __init__(self, GPIOPIN_COM = 26, verbose = False, steering_command_from_center = 110, power_command_from_center = 40):
         self.verbose = verbose
         self.GPIOPIN_COM = GPIOPIN_COM
         self.steering_command_from_center = steering_command_from_center
         self.power_command_from_center = power_command_from_center 
         GPIO.setup(self.GPIOPIN_COM, GPIO.IN)
-        
-#    def Communication_Setup(self):
-#        GPIO.setup(self.GPIOPIN_COM, GPIO.IN)
-     
+
+    #===============[패킷 데이터 해석]==================
     def Interpret_Packet(self):
-		
         # packet = GPIO.input(self.GPIOPIN_COM)
-        packet = [1, 111, 41]
+        packet = [0, 111, 41]
         
         if packet[0] == 0:
             Mode_Controller.mode = 'manual'
@@ -41,78 +34,69 @@ class Communication_Remote_Center:
         self.power_command_from_center = packet[2]
     
         if self.verbose == True:
+            print("패킷 데이터 확인")
             print(f"패킷 정보: mode={Mode_Controller.mode}, steering_angle={self.steering_command_from_center}, pedal={self.power_command_from_center}")
 
 
 class Mode_Control:
     '''
-    차량 제어 모드를 관리하는 클래스.
-    직접 주행 모드와 / 원격 센터 제어 모드 설정 가능.
+    원격 센터로부터 수신한 데이터 패킷(제어 모드 정보)에 따라 차량을 제어하기 위한 클래스
+    - manual(직접 제어) 모드
+    - remote(원격 센터 제어) 모드 
     '''
+    #====================[INIT]========================
     def __init__(self, mode = 'manual', verbose = False):
         self.mode = mode
         self.verbose = False
     
-    # 사용 X
+    ''' 
+    사용 X
     def Switch_Mode(self, new_mode):
         if new_mode in ['manual', 'remote']:
             self.mode = new_mode
             print(f"차량 제어권 변경: {self.mode}")
         else:
             print("유효하지 않은 모드입니다. 기존 모드를 유지합니다.")
-    
+    '''
+
+    #=============[모터 / 서보모터 제어]================
     def Control_Car(self):
         if self.mode == 'manual':
             RC_Car.Change_Duty_Cycle()
-            RC_Car.setServoPos(RC_Car.servo_Degree)
-        elif self.mode == 'remote':
-        # 원격 센터에서 받아올 페달/스티어링 휠 정보
-            print(f"쓌: {Communication_With_Remote_Center.power_command_from_center}")
+            RC_Car.setServoPos()
 
+        elif self.mode == 'remote':
             RC_Car.dcMotor_Power = Communication_With_Remote_Center.power_command_from_center
             RC_Car.servo_Degree = Communication_With_Remote_Center.steering_command_from_center
             RC_Car.Change_Duty_Cycle()
-            RC_Car.setServoPos(RC_Car.servo_Degree)            
+            RC_Car.setServoPos()            
         if self.verbose == True:
             print(f"현재 제어 모드: {self.mode}")
 
 
 class RC_Car_Control:
     '''
-    해당 클래스는 RC카를 제어하기 위한 클래스로
-    클래스 호출 시 servo모터와 dc모터값을 설정합니다.
-    MOTOR_A_A1의 PIN = 23 / MOTOR_A_B1의 PIN = 24 로 세팅되어 있으며
-    servo, dc_pwm, dcMotor_Power, servo_Degree를 조정 가능
+    RC카 제어를 위해 모터와 서보모터를 셋업 및 제어하는 클래스
     '''
     
     #====================[INIT]========================
-    def __init__(self, DcMotor_Power = 50, Servo_Degree = 90, GPIOPIN_MOTOR_A1 = 23, GPIOPIN_MOTOR_B1 = 24, GPIOPIN_MOTOR_A1_PWM= 0, 
-                 servo = 0, dc_pwm = 0, dcMotor_Power = 0, servo_Degree = 0, verbose = False):
-        #DcMotor_Power = 50  # 0 to 100
-        #Servo_Degree = 90 # 0 to 180
+    def __init__(self, GPIOPIN_MOTOR_A1 = 23, GPIOPIN_MOTOR_B1 = 24, GPIOPIN_MOTOR_A1_PWM= 0, 
+                 servo = 0, dcMotor_Power = 50, servo_Degree = 90, verbose = False):
         self.GPIOPIN_MOTOR_A1 = GPIOPIN_MOTOR_A1
         self.GPIOPIN_MOTOR_B1 = GPIOPIN_MOTOR_B1
         self.GPIOPIN_MOTOR_A1_PWM = GPIOPIN_MOTOR_A1_PWM
         self.servo = servo
-        self.dc_pwm = dc_pwm
-        self.dcMotor_Power = DcMotor_Power
-        self.servo_Degree = Servo_Degree
+        self.dcMotor_Power = dcMotor_Power
+        self.servo_Degree = servo_Degree
         self.Setup_Servo_Motor()
         self.Setup_DC_Motor()
         self.verbose = verbose
         
-    #===============[Setup_DC Motor]====================
+    #=========[모터 PIN / PWM 주파수 세팅]==============
     def Setup_DC_Motor(self, MOTOR_PWM_FREQUENCY = 20):
-        '''
-        이 함수는 기본적으로 PWM_Frequency, 모터 A_A1과 A_B1 의 값이 설정되어있습니ë¤.
-        PWM_Frequency = 20 / A_A1 = 20 / A_B1 = 21
-        PWM_Frequency 값만 설정하려면 인자 하나만 입력하시면 됩니다.
-        각 A_A1, A_B1 값은 GPIO 핀 값입니다.
-        '''
-        #MOTOR_A_A1          = 23 # DC모터 핀1 
-        #MOTOR_A_B1          = 24 # DC모터 핀2 
-        MOTOR_PWM_FREQUENCY = 20 # PWM Frequency
-
+        GPIOPIN_MOTOR_A1          = 23 
+        GPIOPIN_MOTOR_B1          = 24 
+        MOTOR_PWM_FREQUENCY       = 20 
 
         GPIO.setup(self.GPIOPIN_MOTOR_A1, GPIO.OUT)
         GPIO.setup(self.GPIOPIN_MOTOR_B1, GPIO.OUT)
@@ -122,72 +106,45 @@ class RC_Car_Control:
         GPIO.output(self.GPIOPIN_MOTOR_A1, GPIO.LOW)
         GPIO.output(self.GPIOPIN_MOTOR_B1, GPIO.LOW)
     
-    #===============[STOP_DC Motor]====================
-    def Stop_MOTOR(self):
-        self.GPIOPIN_MOTOR_A1_PWM.stop()
-        
-        if self.verbose == True:
-            print("STOP MOTOR")
-    
-    #===============[Change_DUTY_DC Motor]====================
+    #================[모터 속도 제어]==================
     def Change_Duty_Cycle(self):
         self.GPIOPIN_MOTOR_A1_PWM.ChangeDutyCycle(self.dcMotor_Power)
         print(f"dcMotor_Power = {self.dcMotor_Power}")
         
-    #===============[Setup_Servo Motor]====================
+    #==========[서보 모터 PIN / 주파수 세팅]===========
     def Setup_Servo_Motor(self, SERVO_PWM_HZ = 50, GPIOPIN_SERVO = 17):
-        '''
-        이 함수는 기본적으로 PWM_Hz, SERVO의 PIN값이 설정되어있습니다.
-        PWM_Hz = 50 / GPIOPIN_SERVO = 12
-        PWM_Hz 값만 설정하려면 인자 하나만 입력하시면 됩니다.
-        '''
-        GPIOPIN_SERVO     = 17   # 서보모터 핀
-        SERVO_PWM_HZ      = 50   # 서보핀을 PWM 모드 50Hz로 사용하기 (50Hz > 20ms)
-        GPIO.setup(GPIOPIN_SERVO, GPIO.OUT)  # 서보핀 출력으로 설정
+        GPIOPIN_SERVO     = 17   
+        SERVO_PWM_HZ      = 50   # 50Hz > 20ms
+        GPIO.setup(GPIOPIN_SERVO, GPIO.OUT)  
         self.servo = GPIO.PWM(GPIOPIN_SERVO, SERVO_PWM_HZ)  
-        self.servo.start(0)  # 서보 PWM 시작 duty = 0, duty가 0이면 서보는 동작하지 않는다.
+        self.servo.start(0)
 
-    #===============[Setup_Servo POS]====================
-    def setServoPos(self, Servo_degree):
-        '''
-        서보 위치 제어 함수
-        degree에 각도를 입력하면 duty로 변환후 서보 제어(ChangeDutyCycle)
-        '''
-        SERVO_MAX_DUTY    = 12   # 서보의 최대(180도) 위치의 주기
-        SERVO_MIN_DUTY    = 3    # 서보의 최소(0도) 위치의 주기
+    #=========[서보 모터 duty 계산 및 적용]============
+    def setServoPos(self):
+
+        SERVO_MAX_DUTY    = 12  
+        SERVO_MIN_DUTY    = 3  
         
-        # 조향각 범위 지정: 55 ~ 180
-        if Servo_degree > 125:
-            Servo_degree = 125
-        if Servo_degree < 55:
-            Servo_degree = 55
+        # 각도(degree)를 duty로 변경
+        servo_duty = SERVO_MIN_DUTY+(self.servo_Degree*(SERVO_MAX_DUTY-SERVO_MIN_DUTY)/180.0)
 
-        # 각도(degree)를 duty로 변경한다.
-        servo_duty = SERVO_MIN_DUTY+(Servo_degree*(SERVO_MAX_DUTY-SERVO_MIN_DUTY)/180.0)
-        
-        # duty 값 출력
-        if self.verbose == True:
-            print("Degree: {} to {}(Duty)".format(Servo_degree, servo_duty))
-
-        # 변경된 duty값을 서보 pwm에 적용
         self.servo.ChangeDutyCycle(servo_duty)
-        print(f"servo_degree = {Servo_degree}")
+        print(f"servo_degree = {self.servo_Degree}")
+        if self.verbose == True:
+            print("Degree: {} to {}(Duty)".format(self.servo_Degree, servo_duty))
 
 class Racing_Wheel:
     '''
-    해당 코드는 파이게임(pygame) 이라는 라이브러리를 응용하여 조이스틱 값을 받고 사용합니다.
-    함수는 다음과 같습니다.
-    선언 시, 파이게임용 시간과 조이스틱을 반환합니다.
-    
-    Init_Racing_Wheel() -> 시작용 함수, 파이게임 시간을 반환, clock, joystick 반환
+    POWER SHIFT 스티어링 휠 / 페달을 통해 RC카를 제어하기 위한 클래스
+    작품 구동을 위한 핸들, 브레이크, 액셀 기능만 적용
     '''
 
+    #====================[INIT]========================
     def __init__(self, clock = 0, joysticks = 0, status = 0, verbose = False):   
         self.clock, self.joysticks = self.Init_Racing_Wheel()
         self.status = status
         self.verbose = verbose
     
-    #Racing Wheel 관련 시작 함수 실행, clock과 joystick을 반환함
     def Init_Racing_Wheel(self):
         pygame.init()
         pygame.joystick.init()
@@ -206,66 +163,59 @@ class Racing_Wheel:
             joystick.init()
         return self.joysticks
     
+    #=============[스티어링 휠 / 페달 EVENT 기반 RC카 제어]============
     def Print_Input(self):
+        self.status = -1
         for event in pygame.event.get():
             if event.type == pygame.JOYAXISMOTION:
-                #print(event.joy, event.axis, event.value)
-                if event.axis == 0:        #Handle  -10 ~ 0 ~ 10
+                if event.axis == 0:        #Handle: -10 ~ 0 ~ 10
                     self.status = 0
-                    print("Moving Handle")
                     print(int(event.value *10))
                     new_servo_degree = RC_Car.servo_Degree + event.value * 10
                     RC_Car.servo_Degree = max(20, min(160, new_servo_degree))
-           
+                    if self.verbose == True:
+                        print("Moving Handle")
                     
-                elif event.axis == 2:      #Brake  0 ~ 10
+                elif event.axis == 2:      #Brake: 0 ~ 10
                     self.status = 2
-                    print("Step Brake")
                     print(int(event.value *5 +5))
                     new_power = RC_Car.dcMotor_Power - (event.value * 5 + 5)
                     RC_Car.dcMotor_Power = max(0, new_power)
+                    if self.verbose == True:
+                        print("Step Brake")
                     
-                    
-                elif event.axis == 5:      #Accel  0 ~ 10
+                elif event.axis == 5:      #Accel: 0 ~ 10
                     self.status = 5
-                    print("Step ACCEL")
                     print(int(event.value *5 +5))
                     new_power = RC_Car.dcMotor_Power + (event.value * 5 + 5)
                     RC_Car.dcMotor_Power = min(100, new_power)
+                    if self.verbose == True:
+                        print("Step ACCEL")
                         
-            elif event.type == pygame.JOYBUTTONDOWN:
-                if event.button == 0:
-                    print("Button_Bottom Input")
-                elif event.button == 1:
-                    print("Button_Right Input")
-                elif event.button == 2:
-                    print("Button_Left Input")
-                elif event.button == 3:
-                    print("Button_Up Input")
-                else :
-                    print("Button_else Input")
-                    print(event.button)
                     
-class ACPE:
+class ADAS:
     '''
-    초음파 센서를 이용해 장애물과의 거리를 측정하고 페달 오조작을 방지하는 클래스.
+    초음파 센서를 이용해 장애물과의 거리를 측정하고 운전자의 페달 오조작을 방지하는 클래스
+    - ACPE: Anti-Pedal Misapplication Error
+    - AEB: Autonomous Emergency Braking system
     '''
-    def __init__(self, GPIOPIN_TRIG = 5, GPIOPIN_ECHO = 6, DANGER_DISTANCE = 30, verbose = False):
+    #====================[INIT]========================
+    def __init__(self, GPIOPIN_TRIG = 5, GPIOPIN_ECHO = 6, DANGER_DISTANCE = 40, verbose = False):
         self.GPIOPIN_TRIG = GPIOPIN_TRIG
         self.GPIOPIN_ECHO = GPIOPIN_ECHO
         self.DANGER_DISTANCE = DANGER_DISTANCE
         self.verbose = verbose
-        self.Initiate_ACPE()
+        self.Initiate_ADAS()
 
-    def Initiate_ACPE(self):
+    #================[초음파 센서 셋업]=================
+    def Initiate_ADAS(self):
         GPIO.setmode(GPIO.BCM)
         GPIO.setup(self.GPIOPIN_TRIG, GPIO.OUT)
         GPIO.setup(self.GPIOPIN_ECHO, GPIO.IN)
-
-    def Measure_Distance(self):
         GPIO.output(self.GPIOPIN_TRIG, False)
-        time.sleep(0.1)
 
+    #=============[장애물과의 거리 계산]================
+    def Measure_Distance(self):
         GPIO.output(self.GPIOPIN_TRIG, True)
         time.sleep(0.01)
         GPIO.output(self.GPIOPIN_TRIG, False)
@@ -292,7 +242,6 @@ class ACPE:
             distance = self.Measure_Distance()
             if distance is not None:
                 distances.append(distance)
-            time.sleep(0.1)
 
         if len(distances) > 0:
             if self.verbose == True:
@@ -302,46 +251,48 @@ class ACPE:
             print("ultrasonic sensor do not working !!")
             return None           
 
+    #============[페달 오조작 여부 판단]===============
     def Check_Pedal_Error(self):
         distance = self.Get_Stable_Distance()
         if distance is None:
             return False
 
-        if distance < self.DANGER_DISTANCE and Racing_Wheel_Test.status == 5:
+#        if distance < self.DANGER_DISTANCE and Racing_Wheel_Test.status == 5:
+        if distance < self.DANGER_DISTANCE:
             print("페달 오조작 감지. 가속 제한.")
-            RC_Car.setServoPos(RC_Car.servo_Degree)
+            RC_Car.setServoPos()
 
             if RC_Car.dcMotor_Power > 1:
                 RC_Car.dcMotor_Power = 1
                 return True
         else:
-            print("정상적인 조작 감지중")
+            if self.verbose == True:
+                print("정상적인 조작 감지중")
             return False
                     
 
 # Init 
 RC_Car = RC_Car_Control()
 Racing_Wheel_Test = Racing_Wheel()
-ACPE_System = ACPE()
+ADAS_System = ADAS()
 Communication_With_Remote_Center = Communication_Remote_Center()
 Mode_Controller = Mode_Control()
 
+print("Init Complete")
 
 try:
     while True :
         Communication_With_Remote_Center.Interpret_Packet()
-        
-        # Communication_Remote_Center에서 mode, 조향각, 페달 정보 받아오기
-        # 통신은 항상 유지하기. 데이터 패킷: (mode, 조향각, 페달)
-    
-        pedal_error = ACPE_System.Check_Pedal_Error()
+        pedal_error = ADAS_System.Check_Pedal_Error()
 
         if not pedal_error:
             Mode_Controller.Control_Car()
             
         Racing_Wheel_Test.Print_Input()
-
-        time.sleep(0.1)
+        time.sleep(0.05)
+        
+        print("===========================")
+        print("")
         
 finally :
     RC_Car.Stop_MOTOR()
