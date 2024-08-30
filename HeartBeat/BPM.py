@@ -54,45 +54,40 @@ def Calculate_BPM(peaks, calibration_factor=60):
 def Init_BPM():
     #변수 초기화
     global p_adc, e_adc
-    global ppg_peaks, ppg_count_bpm, ppg_avg_bpm, ppg_tot_bpm, ppg_filtered_bpm
-    global ecg_peaks, ecg_count_bpm, ecg_avg_bpm, ecg_tot_bpm, ecg_filtered_bpm
+    global ppg_peaks, ppg_count_bpm, ppg_avg_bpm, ppg_tot_bpm, ppg_filtered_bpm, ppg_bpm_level
+    global ecg_peaks, ecg_count_bpm, ecg_avg_bpm, ecg_tot_bpm, ecg_filtered_bpm, ecg_bpm_level
     
     if (isinstance(p_adc, MCP3208) == False):
+        print("P_ADC Init")
         p_adc = MCP3208()
         ppg_peaks = []
-        ppg_count_bpm = 0
-        ppg_avg_bpm = 0
-        ppg_tot_bpm = 0
-        ppg_filtered_bpm = 0
+        ppg_count_bpm = 0, ppg_avg_bpm = 0, ppg_tot_bpm = 0, ppg_filtered_bpm = 0, ppg_bpm_level = 0
         
     if (isinstance(e_adc, MCP3208) == False):
+        print("E_ADC Init")
         e_adc = MCP3208()
         ecg_peaks = []
-        ecg_count_bpm = 0
-        ecg_avg_bpm = 0
-        ecg_tot_bpm = 0
-        ecg_filtered_bpm = 0
+        ecg_count_bpm = 0, ecg_avg_bpm = 0, ecg_tot_bpm = 0, ecg_filtered_bpm = 0, ecg_bpm_level = 0
 
 
 # Getting Value : Peak, BPM
 def Get_Values_For_Monitor_Sensor(sensor_type, channel):
-    global p_adc, ppg_peaks, ppg_count_bpm, ppg_avg_bpm, ppg_tot_bpm, ppg_filtered_bpm
-    global e_adc, ecg_peaks, ecg_count_bpm, ecg_avg_bpm, ecg_tot_bpm, ecg_filtered_bpm
+    global p_adc, ppg_peaks, ppg_count_bpm, ppg_avg_bpm, ppg_tot_bpm, ppg_filtered_bpm, ppg_bpm_level
+    global e_adc, ecg_peaks, ecg_count_bpm, ecg_avg_bpm, ecg_tot_bpm, ecg_filtered_bpm, ecg_bpm_level
     
     if sensor_type == "PPG":
         value = p_adc.Read(channel)
-        return value, ppg_peaks, ppg_count_bpm, ppg_avg_bpm, ppg_tot_bpm, ppg_filtered_bpm
+        return value, ppg_peaks, ppg_count_bpm, ppg_avg_bpm, ppg_tot_bpm, ppg_filtered_bpm, ppg_bpm_level
     
     elif sensor_type == "ECG":
         value = e_adc.Read(channel)
-        return ecg_peaks, ecg_count_bpm, ecg_avg_bpm, ecg_tot_bpm, ecg_filtered_bpm
+        return ecg_peaks, ecg_count_bpm, ecg_avg_bpm, ecg_tot_bpm, ecg_filtered_bpm, ecg_bpm_level
     
     
 # Setting Value : Peak, BPM
-def Set_Values_After_Monirot_Sensor(sensor_type, peaks, count_bpm, avg_bpm, tot_bpm, filtered_bpm):
-    
-    global ppg_peaks, ppg_count_bpm, ppg_avg_bpm, ppg_tot_bpm, ppg_filtered_bpm
-    global ecg_peaks, ecg_count_bpm, ecg_avg_bpm, ecg_tot_bpm, ecg_filtered_bpm
+def Set_Values_After_Monitor_Sensor(sensor_type, peaks, count_bpm, avg_bpm, tot_bpm, filtered_bpm, bpm_level):
+    global ppg_peaks, ppg_count_bpm, ppg_avg_bpm, ppg_tot_bpm, ppg_filtered_bpm, ppg_bpm_level
+    global ecg_peaks, ecg_count_bpm, ecg_avg_bpm, ecg_tot_bpm, ecg_filtered_bpm, ecg_bpm_level
     
     if sensor_type == "PPG":
         ppg_peaks = peaks
@@ -100,6 +95,7 @@ def Set_Values_After_Monirot_Sensor(sensor_type, peaks, count_bpm, avg_bpm, tot_
         ppg_avg_bpm = avg_bpm
         ppg_tot_bpm = tot_bpm
         ppg_filtered_bpm = filtered_bpm
+        ppg_bpm_level = bpm_level
     
     elif sensor_type == "ECG":
         ecg_peaks = peaks
@@ -107,29 +103,54 @@ def Set_Values_After_Monirot_Sensor(sensor_type, peaks, count_bpm, avg_bpm, tot_
         ecg_avg_bpm = avg_bpm
         ecg_tot_bpm = tot_bpm
         ecg_filtered_bpm = filtered_bpm
+        ecg_bpm_level = bpm_level
 
 
 def Monitor_Sensor(sensor_type, channel, threshold, min_interval, alpha, calibration_factor):
     # 아날로그값 측정
-    value, peaks, count_bpm, avg_bpm, tot_bpm, filtered_bpm = Get_Values_For_Monitor_Sensor(sensor_type, channel)
+    value, peaks, count_bpm, avg_bpm, tot_bpm, filtered_bpm, bpm_level = Get_Values_For_Monitor_Sensor(sensor_type, channel)
     voltage = (value * 3.3) / 4096
     current_time = time.time()
 
     #임계값 넘어가면 피크 측정통해 bpm 계산
     if voltage > threshold:
-        if len(peaks) == 0 or (current_time - peaks[-1]) > min_interval:
+        if (len(peaks) == 0) or ((current_time - peaks[-1]) > min_interval):
             peaks.append(current_time)
             if len(peaks) > 10:
                 peaks.pop(0)
             bpm = Calculate_BPM(peaks, calibration_factor)
             filtered_bpm = Low_Pass_Filter(bpm, alpha, filtered_bpm)
             
+            #code trans start
             if filtered_bpm != 0:
+                count_zero_bpm = 0 #zero count goto 0
                 count_bpm += 1
-                tot_bpm += filtered_bpm
-                avg_bpm = tot_bpm / count_bpm
+                
+                if count_bpm != 0:
+                    
+                    tot_bpm += filtered_bpm
+                    avg_bpm = (tot_bpm / count_bpm)
+                    bpm_level = 1
+                        
+                    if count_bpm >= 20:  #compare with avg_bpm satisfy -> level 2
+                        if ((abs((avg_bpm)-(filtered_bpm))/avg_bpm)*100) >= 5:
+                            bpm_level = 2
+                        
+            print(f"{sensor_type} - BPM: {filtered_bpm:.2f}, Count: {count_bpm}, Avg BPM: {avg_bpm:.2f}")
+                
+    else:
+        count_zero_bpm += 1 # bpm zero count
+        print(f"{sensor_type} - zero count : {count_zero_bpm} \n")
+        if count_zero_bpm >= 100: # if bpm zero count 100 -> level 3
+            bpm_level = 3
+            if sensor_type == "PPG":
+                print(f"ppg bpm level = {ppg_bpm_level}")
+            elif sensor_type == "ECG":
+                print(f"ecg bpm level = {ecg_bpm_level}")
+            #associated with PIG sensor can increase accuracy         
+    print(f"{sensor_type} Voltage: {voltage:.2f} V, BPM Level: {bpm_level}")
 
-    Set_Values_After_Monirot_Sensor(sensor_type, peaks, count_bpm, avg_bpm, tot_bpm, filtered_bpm)
+    Set_Values_After_Monitor_Sensor(sensor_type, peaks, count_bpm, avg_bpm, tot_bpm, filtered_bpm, bpm_level)
 
 
 
@@ -152,8 +173,8 @@ def Get_BPM_Data(
     '''
     #If You want, You can use these values
     global p_adc, e_adc
-    global ppg_peaks, ppg_count_bpm, ppg_avg_bpm, ppg_tot_bpm, ppg_filtered_bpm
-    global ecg_peaks, ecg_count_bpm, ecg_avg_bpm, ecg_tot_bpm, ecg_filtered_bpm
+    global ppg_peaks, ppg_count_bpm, ppg_avg_bpm, ppg_tot_bpm, ppg_filtered_bpm, ppg_bpm_level
+    global ecg_peaks, ecg_count_bpm, ecg_avg_bpm, ecg_tot_bpm, ecg_filtered_bpm, ecg_bpm_level
     
     if (isinstance(p_adc, MCP3208) == False) or (isinstance(e_adc, MCP3208) == False):
         Init_BPM()
@@ -184,3 +205,11 @@ def Get_BPM_Data(
     
 
     #return ppg_avg_bpm, ecg_avg_bpm
+    
+def main():
+    Init_BPM()
+    while True:
+        Get_BPM_Data()
+    
+if __name__ == '__main__':
+    main()
