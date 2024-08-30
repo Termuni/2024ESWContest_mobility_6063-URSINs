@@ -299,7 +299,7 @@ class ACPE:
             return sum(distances) / len(distances)
         else:
             print("ultrasonic sensor do not working !!")
-            return None           
+            return None
 
     def Check_Pedal_Error(self):
         distance = self.Get_Stable_Distance()
@@ -319,29 +319,33 @@ class ACPE:
                     
 
 # Init 
-RC_Car = RC_Car_Control()
-Racing_Wheel_Test = Racing_Wheel()
-ACPE_System = ACPE()
-Communication_With_Remote_Center = Communication_Remote_Center()
-Mode_Controller = Mode_Control()
+def Init_ACPE():
+    global RC_Car, Racing_Wheel_Test, ACPE_System, Communication_With_Remote_Center, Mode_Controller    
+    RC_Car = RC_Car_Control()
+    Racing_Wheel_Test = Racing_Wheel()
+    ACPE_System = ACPE()
+    Communication_With_Remote_Center = Communication_Remote_Center()
+    Mode_Controller = Mode_Control()
 
+if __name__ == "__main__":
+    Init_ACPE()
 
-try:
-    while True :
-        Communication_With_Remote_Center.Interpret_Packet()
-        
-        # Communication_Remote_Center에서 mode, 조향각, 페달 정보 받아오기
-        # 통신은 항상 유지하기. 데이터 패킷: (mode, 조향각, 페달)
-    
-        pedal_error = ACPE_System.Check_Pedal_Error()
-
-        if not pedal_error:
-            Mode_Controller.Control_Car()
+    try:
+        while True :
+            Communication_With_Remote_Center.Interpret_Packet()
             
-        Racing_Wheel_Test.Print_Input()
-
-        time.sleep(0.1)
+            # Communication_Remote_Center에서 mode, 조향각, 페달 정보 받아오기
+            # 통신은 항상 유지하기. 데이터 패킷: (mode, 조향각, 페달)
         
-finally :
-    RC_Car.Stop_MOTOR()
-    GPIO.cleanup()
+            pedal_error = ACPE_System.Check_Pedal_Error()
+
+            if not pedal_error:
+                Mode_Controller.Control_Car()
+                
+            Racing_Wheel_Test.Print_Input()
+
+            time.sleep(0.1)
+            
+    finally :
+        RC_Car.Stop_MOTOR()
+        GPIO.cleanup()

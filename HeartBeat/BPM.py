@@ -167,7 +167,7 @@ def Monitor_Sensor(sensor_type, channel, threshold, min_interval, alpha, calibra
 
 
 
-def Get_BPM_Data(
+def Init_Get_BPM_Data(
     ppg_ch = 0, ppg_thd = 0.9, ppg_min_intv = 2.0, ppg_A = 0.75, ppg_cal_fact = 240,
     ecg_ch = 1, ecg_thd = 1.8, ecg_min_intv = 2.0, ecg_A = 0.75, ecg_cal_fact = 240):
     '''
@@ -221,7 +221,7 @@ def Get_BPM_Data(
     
 def main():
     Init_BPM()
-    Get_BPM_Data()
+    Init_Get_BPM_Data()
     
-if __name__ == '__main__':
-    main()
+# if __name__ == '__main__':
+#     main()
