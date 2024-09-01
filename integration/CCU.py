@@ -2,7 +2,6 @@
 import sys, os
 import RPi.GPIO as GPIO #RPi.GPIO 라이브러리를 GPIO로 사용
 import time
-import sys
 sys.path.append(os.path.dirname(os.path.dirname(__path__)))
 
 #==================CUSTOM IMPORT==================
@@ -26,7 +25,9 @@ def Init_CCU():
     bpm.Init_BPM()
     bpm.Init_Get_BPM_Data()
     
-    # 4. SET extra Datas
+    # 4. Init Monitor
+    
+    # 5. SET extra Datas
     debug_mode = False
     mode_change_input = False
     warning_score = 0
@@ -52,11 +53,11 @@ if __name__ == "__main__":
                     print("DEBUG MODE ACTIVATE")
 
                 #Else Getting Sensor Value
-                else: 
+                else:
                     print("DEBUG MODE DEACTIVATE")
                 
                 
-            # 2. Set Values of Racing Wheel --> Is this Right?
+            # 2. Set Values of Racing Wheel
             acpe.Communication_With_Remote_Center.Interpret_Packet()
             
             
@@ -85,7 +86,14 @@ if __name__ == "__main__":
             #Elif Warning LV 3
             elif 100 > warning_score >= 75:
                 print("WARNING LV 3")
+                #LCD Remote Control Alarm
+                #External ALARM
                 #Remote On
+            
+            
+            #Send Warning LV to TCU
+            
+            #Receive Score Setup From TCU -> Score Setup 0 or over 100
             
             
             #If Remote OFF
@@ -104,9 +112,7 @@ if __name__ == "__main__":
             #Else Something Blocking Front
             if not pedal_error:
                 acpe.Mode_Controller.Control_Car()
-            
-            
-            print("ACPE ACTIVE")
+                print("ACPE ACTIVE")
             
     except:
         print("END")

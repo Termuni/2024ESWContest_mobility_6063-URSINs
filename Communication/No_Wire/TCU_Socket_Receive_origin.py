@@ -1,7 +1,6 @@
 import socket
-import numpy as np
 
-def Start_Server():
+def start_server():
     host = '0.0.0.0'  # Bind to all interfaces
     port = 9090
 
@@ -12,16 +11,22 @@ def Start_Server():
     print(f"Connected by {addr}")
     return(conn)
 
-def While_Server(conn):
+def while_server(conn):
+    #while True:
+    #while True:
     print("while_server...line test1")
     data = conn.recv(1024)
     print("while_server...line test2")    
     if not data:
         print("No Date from Socket...")
         return
+        #break
+    #print("Received: ", repr(data))
     print("Received: ", data)
     print("Received: ", data.decode())  # TYPE = str
+    #print("Received: ", int(data.decode()))
     
+    #print(type(repr(data)))
     print(type(data))
     print(type(data.decode())) # TYPE = str
     
@@ -42,7 +47,10 @@ def While_Server(conn):
     part_Brake = int(parts[2])
     #==============================
     
-    return np.array([part_Handle, part_Accel, part_Brake])
+    print(part_Handle)
+    print(part_Accel)
+    print(part_Brake)
+    return(part_Handle, part_Accel, part_Brake)
 #start_server()
 
 
