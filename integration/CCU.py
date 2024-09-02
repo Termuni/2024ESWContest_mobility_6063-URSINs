@@ -2,18 +2,28 @@
 import sys, os
 import RPi.GPIO as GPIO #RPi.GPIO 라이브러리를 GPIO로 사용
 import time
-sys.path.append(os.path.dirname(os.path.dirname(__path__)))
+
+file_path = "C:/SeonMin/Embedded_SW"
+sub_paths = ["ACPE", "Communication", "HeartBeat", "Window"]
+
+for sub_path in sub_paths:
+    full_path = os.path.join(file_path, sub_path)
+    
+    # 경로를 sys.path에 추가
+    if full_path not in sys.path:
+        sys.path.append(full_path)
 
 #==================CUSTOM IMPORT==================
-from ACPE import ACPE as acpe
-from HeartBeat import BPM as bpm
+import ACPE as acpe
+import BPM as bpm
+import WindowCall as wind
 import Warning_Score_Calculator as warn
 #==================CUSTOM IMPORT==================
 
 #Set Constant Values
 
 def Init_CCU():
-    global GPIO, debug_mode, mode_change_input, pedal_error, warning_score
+    global GPIO, debug_mode, mode_change_input, pedal_error, warning_score, hasWarned, remote_Mode
     # 1. SET GPIO
     GPIO.setmode(GPIO.BCM) #Pin Mode : GPIO
     #GPIO.setmode(GPIO.BOARD)  #Pin Mode : BOARD
@@ -31,7 +41,19 @@ def Init_CCU():
     debug_mode = False
     mode_change_input = False
     warning_score = 0
+    hasWarned = False
+    remote_Mode = False
+    
 
+
+def Debug_INPUT():
+    #Debug Input Mode Activate
+    d_ppg_lv = 0
+    d_ecg_lv = 0
+    d_cam_lv = 0
+    d_pedal_error = False
+    warning_score = 0
+    warning_score = warn.Calculate_Warning_Score(d_ppg_lv, d_ecg_lv, d_cam_lv, d_pedal_error, warning_score)
 
 
 #====================Main(START)==================
@@ -44,70 +66,94 @@ if __name__ == "__main__":
         print("START PROCESSING")
         
         while True:
-            # 1. Debug Mode Set
+            # ================ 1. Debug Mode Set ================
             if mode_change_input:
                 debug_mode = not debug_mode
-                
-                #If Debug Mode
+                mode_change_input = not mode_change_input
                 if debug_mode:
                     print("DEBUG MODE ACTIVATE")
-
-                #Else Getting Sensor Value
                 else:
                     print("DEBUG MODE DEACTIVATE")
                 
                 
-            # 2. Set Values of Racing Wheel
+            # ================ 2. Set Values of Racing Wheel ================
             acpe.Communication_With_Remote_Center.Interpret_Packet()
             
             
-            # 3. Warning Lv Calculate By Algorithm
-            pedal_error = acpe.ACPE_System.Check_Pedal_Error()
-            warning_score = warn.Calculate_Warning_Score(bpm.ppg_bpm_level, bpm.ecg_bpm_level, 0, pedal_error, warning_score)
+            # ================ 3. Warning Lv Calculate By Algorithm ================
+            #If Debug Mode
+            if debug_mode:
+                Debug_INPUT()
+                
+            #Else Getting Sensor Value
+            else:
+                pedal_error = acpe.ACPE_System.Check_Pedal_Error()
+                cam_lv = 0
+                warning_score = warn.Calculate_Warning_Score(bpm.ppg_bpm_level, bpm.ecg_bpm_level, cam_lv, pedal_error, warning_score)
+                
             
+            # ================ 4. Warning Lv Usage ================
+            # ---------------- 4.1 Scoring Algorithm ----------------
             
-            # 4. Warning Lv Usage
-            
-            #If Warning LV 1
-            if 50 > warning_score >= 25:
+            #                  If Warning LV 0                 
+            if 25 >= warning_score >= 0:
+                remote_Mode = False
+                
+            #                  If Warning LV 1                  
+            elif 50 > warning_score >= 25:
+                remote_Mode = False
                 print("WARNING LV 1")
-                #LCD Alarm
-                #Remote Off
+                if not hasWarned:    
+                    #LCD Alarm
+                    hasWarned = True
+                    wind.Show_Window(1)
+                else:
+                    if (hasWarned) and (not wind.lv1.flag_Clicked):
+                        #얼마나 빨리 많이 올릴 것인지?
+                        warning_score = warning_score + 0.01
+                    else:
+                        warning_score = 0
             
             
-            #Elif Warning LV 2
+            #                  Elif Warning LV 2                  
             elif 75 > warning_score >= 50:
+                remote_Mode = False
                 print("WARNING LV 2")
                 #Sound Output
                 #LED ON
-                #Remote Off
             
             
-            #Elif Warning LV 3
+            #                  Elif Warning LV 3                  
             elif 100 > warning_score >= 75:
+                remote_Mode = True
                 print("WARNING LV 3")
                 #LCD Remote Control Alarm
                 #External ALARM
                 #Remote On
             
-            
+            # ---------------- 4.2 Send And Receive Warning Lv ----------------
             #Send Warning LV to TCU
             
-            #Receive Score Setup From TCU -> Score Setup 0 or over 100
+            #Receive Score Setup From TCU -> Score Setup 0 or over 100 which set by Center
             
             
+            # ---------------- 4.3 Set Remote Mode ----------------
             #If Remote OFF
+            if not remote_Mode:
+                print("Manual Drive")
                 #Set Motor Data by CCU
             
             
             #Else Remote ON
+            else:
+                print("Remote Drive")
                 #Get Motor Data from TCU
             
             
+            # ================ 5. ACPE ================
             #If There Is Nothing Blocking Front
                 #Sending Motor and Submotor Value
             acpe.Racing_Wheel_Test.Print_Input()
-                    
                     
             #Else Something Blocking Front
             if not pedal_error:
