@@ -7,18 +7,18 @@ import sys
 sys.path.append(os.path.dirname(os.path.dirname(__path__)))
 
 #==================CUSTOM IMPORT==================
-from Communication import TCU_Socket_Receive as tcu_R
+import TCP_IP_Communiccation.py as wl
 #==================CUSTOM IMPORT==================
 
 #Init
 def Init_TCU():
-    global GPIO, debug_mode, mode_change_input, control, warning_LV
+    global GPIO, debug_mode, mode_change_input, control, warning_LV, socket
     # 1. SET GPIO
     GPIO.setmode(GPIO.BCM) #Pin Mode : GPIO
     #GPIO.setmode(GPIO.BOARD)  #Pin Mode : BOARD
        
     # 2. SET TCU-R
-    tcu_R.While_Server(tcu_R.Start_Server()) 
+    socket = wl.Init_Client_Socket('10.211.173.2')
     
     # 3. SET extra Datas
     debug_mode = False

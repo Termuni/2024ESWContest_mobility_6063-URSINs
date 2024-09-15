@@ -4,7 +4,7 @@ import RPi.GPIO as GPIO #RPi.GPIO 라이브러리를 GPIO로 사용
 import time
 
 file_path = "C:/SeonMin/Embedded_SW"
-sub_paths = ["ACPE", "Communication", "HeartBeat", "Window"]
+sub_paths = ["ACPE", "Communication", "HeartBeat", "Window", "Communication/No_Wire"]
 
 for sub_path in sub_paths:
     full_path = os.path.join(file_path, sub_path)
