@@ -63,7 +63,7 @@ class Mode_Control:
     def Control_Car(self):
         if self.mode == 'manual':
             RC_Car.Change_Duty_Cycle()
-            RC_Car.setServoPos(RC_Car.servo_Degree)
+            RC_Car.Set_Servo_Pos(RC_Car.servo_Degree)
         elif self.mode == 'remote':
         # 원격 센터에서 받아올 페달/스티어링 휠 정보
             print(f"쓌: {Communication_With_Remote_Center.power_command_from_center}")
@@ -71,7 +71,7 @@ class Mode_Control:
             RC_Car.dcMotor_Power = Communication_With_Remote_Center.power_command_from_center
             RC_Car.servo_Degree = Communication_With_Remote_Center.steering_command_from_center
             RC_Car.Change_Duty_Cycle()
-            RC_Car.setServoPos(RC_Car.servo_Degree)            
+            RC_Car.Set_Servo_Pos(RC_Car.servo_Degree)            
         if self.verbose == True:
             print(f"현재 제어 모드: {self.mode}")
 
@@ -147,7 +147,7 @@ class RC_Car_Control:
         self.servo.start(0)  # 서보 PWM 시작 duty = 0, duty가 0이면 서보는 동작하지 않는다.
 
     #===============[Setup_Servo POS]====================
-    def setServoPos(self, Servo_degree):
+    def Set_Servo_Pos(self, Servo_degree):
         '''
         서보 위치 제어 함수
         degree에 각도를 입력하면 duty로 변환후 서보 제어(ChangeDutyCycle)
@@ -190,11 +190,11 @@ class Racing_Wheel:
     def Init_Racing_Wheel(self):
         pygame.init()
         pygame.joystick.init()
-        self.clock = self.Clock_Set()
+        self.clock = self.Set_Clock()
         self.joysticks = self.Get_Joystick()
         return self.clock, self.joysticks
     
-    def Clock_Set(self):
+    def Set_Clock(self):
         self.clock = pygame.time.Clock()
         return self.clock
     
@@ -205,7 +205,7 @@ class Racing_Wheel:
             joystick.init()
         return self.joysticks
     
-    def Print_Input(self):
+    def Get_Input(self):
         for event in pygame.event.get():
             if event.type == pygame.JOYAXISMOTION:
                 #print(event.joy, event.axis, event.value)
@@ -308,7 +308,7 @@ class ACPE:
 
         if distance < self.DANGER_DISTANCE and Racing_Wheel_Test.status == 5:
             print("페달 오조작 감지. 가속 제한.")
-            RC_Car.setServoPos(RC_Car.servo_Degree)
+            RC_Car.Set_Servo_Pos(RC_Car.servo_Degree)
 
             if RC_Car.dcMotor_Power > 1:
                 RC_Car.dcMotor_Power = 1
