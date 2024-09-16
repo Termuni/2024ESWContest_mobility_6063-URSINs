@@ -6,6 +6,7 @@
  - 통신 패키지 정리
  
 3. ACPE 정리
+ Vervos -> 어디에 쓰이는건지??
  1) Communication_Remote Center 클래스 -> init시 GPIO 설정, 센터에서 오는 조향각 및 파워 설정
 	Interpret_Packet 함수 통해 Main에서 지속 통신
 		이때 packet = [1, 111, 41]로 설정 되어있고, 맨 앞의 1이 0이 되면 Manual
@@ -28,6 +29,11 @@
 	Measure_Distance 함수로 1회 초음파 센서 거리 측정
 	Get_Stable_Distance 함수로 초음파 sampling 횟수만큼 거리 측정
 	Check_Pedal_Error 함수로 페달 오조작 감지
+	
+ 1] Racing_Wheel 값 받아오는 클래스 하나
+ 2] RC_Car 조종하는 클래스 하나
+ 3] Ultra_Sonic 값 받아오는 클래스 하나
+ 4] 
 	
 4. 초음파 Thread로 받을 방법 구상
 
