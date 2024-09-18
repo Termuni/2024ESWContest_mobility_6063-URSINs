@@ -3,33 +3,41 @@ import sys, os
 import RPi.GPIO as GPIO #RPi.GPIO 라이브러리를 GPIO로 사용
 import time
 
-file_path = "C:/SeonMin/Embedded_SW"
-sub_paths = ["ACPE", "Communication", "HeartBeat", "Window"]
+# file_path = "C:/SeonMin/Embedded_SW"
+# sub_paths = ["ACPE", "Communication", "HeartBeat", "Window"]
 
-for sub_path in sub_paths:
-    full_path = os.path.join(file_path, sub_path)
+# for sub_path in sub_paths:
+#     full_path = os.path.join(file_path, sub_path)
     
-    # 경로를 sys.path에 추가
-    if full_path not in sys.path:
-        sys.path.append(full_path)
+#     # 경로를 sys.path에 추가
+#     if full_path not in sys.path:
+#         sys.path.append(full_path)
 
 #==================CUSTOM IMPORT==================
-import ACPE as acpe
+import ACPE_Renewal as acpe
 import BPM as bpm
 import WindowCall as wind
 import Warning_Score_Calculator as warn
+import TCP_IP_Communication as wlcom
+import UART_Communication as wcom
 #==================CUSTOM IMPORT==================
 
 #Set Constant Values
 
 def Init_CCU():
-    global GPIO, debug_mode, mode_change_input, pedal_error, warning_score, hasWarned, remote_Mode
+    global GPIO
+    global pedal_error
+    global serial, tcp
+    global debug_mode, mode_change_input, warning_score, hasWarned, remote_Mode
+    
     # 1. SET GPIO
     GPIO.setmode(GPIO.BCM) #Pin Mode : GPIO
     #GPIO.setmode(GPIO.BOARD)  #Pin Mode : BOARD
     
     # 2. Init acpe
     acpe.Init_ACPE()
+    acpe.Init_Get_UltraSonic_Distance()
+    pedal_error = False
     
     # 3. Init bpm
     bpm.Init_BPM()
@@ -37,7 +45,11 @@ def Init_CCU():
     
     # 4. Init Monitor
     
-    # 5. SET extra Datas
+    # 5. Init Communication
+    serial = wcom.Init_UART()
+    tcp = wlcom.Init_Client_Socket()
+    
+    # 6. SET extra Datas
     debug_mode = False
     mode_change_input = False
     warning_score = 0
@@ -46,13 +58,8 @@ def Init_CCU():
     
 
 
-def Debug_INPUT():
+def Debug_INPUT(d_ppg_lv, d_ecg_lv, d_cam_lv, d_pedal_error, warning_score):
     #Debug Input Mode Activate
-    d_ppg_lv = 0
-    d_ecg_lv = 0
-    d_cam_lv = 0
-    d_pedal_error = False
-    warning_score = 0
     warning_score = warn.Calculate_Warning_Score(d_ppg_lv, d_ecg_lv, d_cam_lv, d_pedal_error, warning_score)
 
 
@@ -77,17 +84,18 @@ if __name__ == "__main__":
                 
                 
             # ================ 2. Set Values of Racing Wheel ================
-            acpe.Communication_With_Remote_Center.Interpret_Packet()
+            acpe.Update_RC_Car_Duty_Cycle()
             
             
             # ================ 3. Warning Lv Calculate By Algorithm ================
             #If Debug Mode
             if debug_mode:
-                Debug_INPUT()
+                # Debug_INPUT()
+                0
                 
             #Else Getting Sensor Value
             else:
-                pedal_error = acpe.ACPE_System.Check_Pedal_Error()
+                pedal_error = acpe.Check_Pedal_Error()
                 cam_lv = 0
                 warning_score = warn.Calculate_Warning_Score(bpm.ppg_bpm_level, bpm.ecg_bpm_level, cam_lv, pedal_error, warning_score)
                 

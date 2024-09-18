@@ -2,7 +2,7 @@
 import serial
 import time
 
-def init_uart(port="/dev/serial0", baudrate=9600):
+def Init_UART(port="/dev/serial0", baudrate=9600):
     """
     UART 포트를 초기화합니다.
     :param port: UART 포트 경로 (예: /dev/serial0)
@@ -12,7 +12,7 @@ def init_uart(port="/dev/serial0", baudrate=9600):
     ser = serial.Serial(port, baudrate, timeout=1)
     return ser
 
-def send_data(ser, data = '0'):
+def Send_Data(ser, data = '0'):
     """
     데이터를 UART를 통해 전송합니다.
     데이터가 없을 경우 '0'을 전송합니다.
@@ -26,7 +26,7 @@ def send_data(ser, data = '0'):
         print(f"{ser} is not Serial!")
 
 
-def receive_data(ser):
+def Receive_Data(ser):
     """
     UART를 통해 데이터를 수신합니다.
     수신된 데이터가 없을 경우 '0'을 반환합니다.
@@ -39,12 +39,11 @@ def receive_data(ser):
             if data:
                 print(f"Received: {data}")  # 수신된 데이터 출력
                 return data
-    else:
-        print(f"{ser} is not Serial!")
+    print(f"{ser} is not Serial!")
     return '0'
 
 
-def close_uart(ser):
+def Close_UART(ser):
     """
     UART 포트를 닫습니다.
     :param ser: 초기화된 serial 객체
@@ -53,7 +52,7 @@ def close_uart(ser):
         ser.close()
 
 
-def master_communication(ser, data=None):
+def Master_COM(ser, data=None):
     """
     마스터 장치에서 데이터를 전송하고 응답을 수신합니다.
     :param ser: 초기화된 serial 객체
@@ -61,13 +60,13 @@ def master_communication(ser, data=None):
     :return: 슬레이브로부터 수신된 응답 데이터
     """
     if isinstance(ser, serial.Serial):
-        send_data(ser, data)  # 데이터 전송
-        response = receive_data(ser)  # 슬레이브의 응답 수신
+        Send_Data(ser, data)  # 데이터 전송
+        response = Receive_Data(ser)  # 슬레이브의 응답 수신
         return response
     else:
         print(f"{ser} is not Serial!")
 
-def slave_communication(ser, data=None):
+def Slave_COM(ser, data=None):
     """
     슬레이브 장치에서 데이터를 수신하고 응답을 전송합니다.
     :param ser: 초기화된 serial 객체
@@ -75,8 +74,8 @@ def slave_communication(ser, data=None):
     :return: 마스터로부터 수신된 메시지
     """
     if isinstance(ser, serial.Serial):
-        message = receive_data(ser)  # 마스터로부터 메시지 수신
-        send_data(ser, data)  # 응답 데이터 전송
+        message = Receive_Data(ser)  # 마스터로부터 메시지 수신
+        Send_Data(ser, data)  # 응답 데이터 전송
         return message
     else:
         print(f"{ser} is not Serial!")
