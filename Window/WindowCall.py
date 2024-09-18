@@ -5,7 +5,7 @@
 import sys, os
 
 window_path = "C:/SeonMin/Embedded_SW/Window/ui"
-sub_paths = ["Lv1", "Lv2"]#, "Lv3", "Lv4"]
+sub_paths = ["Debug", "Lv1", "Lv2"]#, "Lv3", "Lv4"]
 
 for sub_path in sub_paths:
     full_path = os.path.join(window_path, sub_path)
@@ -15,13 +15,17 @@ for sub_path in sub_paths:
         sys.path.append(full_path)
 
 #==================CUSTOM IMPORT==================
+import Debug_Caller as debug
 import Lv1_Warning_Caller as lv1
 import Lv2_Warning_Caller as lv2
 #==================CUSTOM IMPORT==================
 
 def Show_Window(level):
-    if level == 1:
+    if level == 'a':
         lv1.Show_Window()
     if level == 2:
         lv2.Show_Window()
+    if level == 'debug':
+        debug.Show_Window()
         
+Show_Window(input("Input Lv : "))

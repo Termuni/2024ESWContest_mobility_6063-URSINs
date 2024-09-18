@@ -17,6 +17,7 @@ class Mywindow(QMainWindow, form_class ):
         #print("Button Clicked!")
         flag_Clicked = True
         QApplication.quit()
+        return 1
         
 
 def Show_Window():
@@ -25,3 +26,6 @@ def Show_Window():
     myWindow = Mywindow()
     myWindow.show()
     app.exec_()
+    return app
+
+#Show_Window()
