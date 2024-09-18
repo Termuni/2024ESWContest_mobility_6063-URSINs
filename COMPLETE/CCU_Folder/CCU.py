@@ -3,6 +3,7 @@ import sys, os
 import RPi.GPIO as GPIO #RPi.GPIO 라이브러리를 GPIO로 사용
 import time
 
+#region File Path Control
 # file_path = "C:/SeonMin/Embedded_SW"
 # sub_paths = ["ACPE", "Communication", "HeartBeat", "Window"]
 
@@ -12,9 +13,10 @@ import time
 #     # 경로를 sys.path에 추가
 #     if full_path not in sys.path:
 #         sys.path.append(full_path)
+#endregion File Path Control
 
 #==================CUSTOM IMPORT==================
-import COMPLETE.CCU_Folder.UDAS as udas
+import UDAS as udas
 import BPM as bpm
 import WindowCall as wind
 import Warning_Score_Calculator as warn
@@ -56,8 +58,6 @@ def Init_CCU():
     hasWarned = False
     remote_Mode = False
     wheel_Value = [0, 0]
-    
-
 
 def Debug_INPUT(d_ppg_lv, d_ecg_lv, d_cam_lv, d_pedal_error, warning_score):
     #Debug Input Mode Activate
@@ -74,7 +74,7 @@ if __name__ == "__main__":
         print("START PROCESSING")
         
         while True:
-            # ================ 1. Debug Mode Set ================
+            # ================ 1. Debug Mode Set (Complete)================
             if mode_change_input:
                 mode_change_input = not mode_change_input
                 if not debug_mode:
@@ -84,11 +84,11 @@ if __name__ == "__main__":
                     debug_mode = not debug_mode
                     print("DEBUG MODE DEACTIVATE")
                 
-            # ================ 2. Get Values of Racing Wheel ================
+            # ================ 2. Get Values of Racing Wheel (Complete)================
             wheel_Value = udas.Get_Racing_Wheel_Value()
             
-            # ================ 3. Warning Lv Calculate By Algorithm ================
-            #If Debug Mode
+            # ================ 3. Warning Lv Calculate By Algorithm (In Progress)================
+            #If Debug Mode (In Progress)
             if debug_mode:
                 # Debug_INPUT()
                 0
@@ -97,9 +97,10 @@ if __name__ == "__main__":
             else:
                 pedal_error = udas.Check_Pedal_Error()
                 cam_lv = 0
-                warning_score = warn.Calculate_Warning_Score(bpm.ppg_bpm_level, bpm.ecg_bpm_level, cam_lv, pedal_error, warning_score)
+                warning_score = warn.Calculate_Warning_Score(
+                    bpm.Get_PPG_BPM_Data(), bpm.Get_ECG_BPM_Data(), cam_lv, pedal_error, warning_score)
                 
-            
+    #region ==================== 4. Warning LV (In Progress)====================
             # ================ 4. Warning Lv Usage ================
             # ---------------- 4.1 Scoring Algorithm ----------------
             
@@ -157,13 +158,15 @@ if __name__ == "__main__":
                 print("Remote Drive")
                 #Get Motor Data from TCU
             
+            #endregion Warning LV
             
             # ================ 5. ACPE ================
             #If There Is Nothing Blocking Front
             if not pedal_error:
                 #Sending Motor and Submotor Value
+                udas.Set_RC_Car_Servo_Pos(wheel_Value[0])
+                udas.Set_RC_Car_DcMotor_Power(wheel_Value[1])
                 udas.Update_RC_Car_Duty_Cycle()
-                udas.Set_RC_Car_Servo_Pos()
 
             
     except:

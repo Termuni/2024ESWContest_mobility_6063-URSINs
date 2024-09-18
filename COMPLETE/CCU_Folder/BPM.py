@@ -163,9 +163,17 @@ def Monitor_Sensor(sensor_type, channel, threshold, min_interval, alpha, calibra
         e_adc.close()
         print(f"{sensor_type} monitoring stopped.")
 
-    
+#region ============================ API Set (TOP) ============================
 
+def Get_PPG_BPM_Data():
+    global ppg_bpm_level
+    return ppg_bpm_level
 
+def Get_ECG_BPM_Data():
+    global ecg_bpm_level
+    return ecg_bpm_level
+
+#endregion ============================ API Set (TOP) ============================
 
 def Init_Get_BPM_Data(
     ppg_ch = 0, ppg_thd = 0.9, ppg_min_intv = 2.0, ppg_A = 0.75, ppg_cal_fact = 240,

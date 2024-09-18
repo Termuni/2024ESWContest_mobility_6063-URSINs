@@ -222,7 +222,7 @@ def Init_UDAS():
     RC_Car_Set = RC_Car_Control()
     
     
-# ============================ API Set (TOP) ============================
+#region ============================ API Set (TOP) ============================
 
 # . Racing Wheel
 def Get_Racing_Wheel_Status():
@@ -238,10 +238,6 @@ def Get_RC_Car_DcMotor_Power():
     global RC_Car_Set
     return RC_Car_Set.dcMotor_Power
 
-def Update_RC_Car_Duty_Cycle():
-    global RC_Car_Set
-    RC_Car_Set.Change_Duty_Cycle()
-
 def Set_RC_Car_DcMotor_Power(value):
     global RC_Car_Set
     RC_Car_Set.dcMotor_Power = value
@@ -249,6 +245,10 @@ def Set_RC_Car_DcMotor_Power(value):
 def Set_RC_Car_Servo_Pos(value):
     global RC_Car_Set
     RC_Car_Set.Set_Servo_Pos(value)
+    
+def Update_RC_Car_Duty_Cycle():
+    global RC_Car_Set
+    RC_Car_Set.Change_Duty_Cycle()
     
 # . Ultra Sonic
 def Get_Stable_Distance():
@@ -259,7 +259,7 @@ def Get_DANGER_DISTANCE():
     global UDAS_Set
     return UDAS_Set.DANGER_DISTANCE
 
-# ============================ API Set (BOTTOM) ============================
+#endregion ============================ API Set (BOTTOM) ============================
 
 
 def Check_Pedal_Error():
@@ -270,8 +270,6 @@ def Check_Pedal_Error():
 
     if distance < Get_DANGER_DISTANCE() and Get_Racing_Wheel_Status() == 5:
         print("페달 오조작 감지. 가속 제한.")
-        RC_Car_Set.Set_Servo_Pos(RC_Car_Set.servo_Degree)
-        
         if Get_RC_Car_DcMotor_Power() > 1:
             Set_RC_Car_DcMotor_Power(1)
             return True
