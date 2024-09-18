@@ -15,7 +15,7 @@ for sub_path in sub_paths:
         sys.path.append(full_path)
 
 #==================CUSTOM IMPORT==================
-import Debug_Caller as debug
+import Debug_Caller as dbg
 import Lv1_Warning_Caller as lv1
 import Lv2_Warning_Caller as lv2
 #==================CUSTOM IMPORT==================
@@ -26,30 +26,41 @@ def Show_Window(level):
     if level == 2:
         lv2.Show_Window()
     if level == 'debug':
-        debug.Show_Window()
+        dbg.Show_Window()
 
 
 #region API Set
 
 #region LV1 API
 
+def Get_LV1_BTN_Clicked():
+    return lv1.Get_BTN_Clicked()
+
+def Close_LV1_Window():
+    lv1.Close_LV1_Window()
+
 #endregion LV1 API
 
 #region Debugging API
+
 def Get_Debug_PPG_LV():
-    return debug.Get_Debug_PPG_LV
+    return dbg.Get_Debug_PPG_LV
 
 def Get_Debug_ECG_LV():
-    return debug.Get_Debug_ECG_LV
+    return dbg.Get_Debug_ECG_LV
 
 def Get_Debug_CAM_LV():
-    return debug.Get_Debug_CAM_LV
+    return dbg.Get_Debug_CAM_LV
 
 def Get_Debug_Pedal_ERR():
-    return debug.Get_Debug_Pedal_ERR
+    return dbg.Get_Debug_Pedal_ERR
 
 def Get_Debug_Mode():
-    return debug.Get_Debug_Mode
+    return dbg.Get_Debug_Mode
+
+def Close_Debug_Window():
+    dbg.Close_Debug_Window()
+
 #endregion Debugging API
 
 #endregion API Set

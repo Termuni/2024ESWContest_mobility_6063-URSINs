@@ -56,6 +56,9 @@ class Mywindow(QMainWindow, form_class ):
             self.d_pedal_err = self.Pedal_ERR.isChecked()
         print(f"EVERYTHING SET\nppg_lv={self.d_ppg_lv}, ecg_lv={self.d_ecg_lv}, cam_lv={self.d_cam_lv}, pedal_err={self.d_pedal_err}")
 
+    def Close_Window(self):
+        QApplication.quit()
+
 
 def Show_Window():
     global flag_Clicked, myWindow
@@ -86,6 +89,10 @@ def Get_Debug_Pedal_ERR():
 def Get_Debug_Mode():
     global myWindow
     return myWindow.debug_mode
+
+def Close_Debug_Window():
+    global myWindow
+    myWindow.Close_Window()
 
 #endregion API Set
 
