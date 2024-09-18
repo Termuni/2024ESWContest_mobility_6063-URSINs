@@ -27,5 +27,31 @@ def Show_Window(level):
         lv2.Show_Window()
     if level == 'debug':
         debug.Show_Window()
-        
+
+
+#region API Set
+
+#region LV1 API
+
+#endregion LV1 API
+
+#region Debugging API
+def Get_Debug_PPG_LV():
+    return debug.Get_Debug_PPG_LV
+
+def Get_Debug_ECG_LV():
+    return debug.Get_Debug_ECG_LV
+
+def Get_Debug_CAM_LV():
+    return debug.Get_Debug_CAM_LV
+
+def Get_Debug_Pedal_ERR():
+    return debug.Get_Debug_Pedal_ERR
+
+def Get_Debug_Mode():
+    return debug.Get_Debug_Mode
+#endregion Debugging API
+
+#endregion API Set
+
 Show_Window(input("Input Lv : "))

@@ -21,7 +21,7 @@ class Ui_MainWindow(object):
         self.DEBUG_BOX.setGeometry(QtCore.QRect(10, 10, 541, 361))
         self.DEBUG_BOX.setObjectName("DEBUG_BOX")
         self.Debug_Mode_Change = QtWidgets.QPushButton(self.DEBUG_BOX)
-        self.Debug_Mode_Change.setGeometry(QtCore.QRect(330, 40, 201, 81))
+        self.Debug_Mode_Change.setGeometry(QtCore.QRect(330, 70, 201, 51))
         self.Debug_Mode_Change.setObjectName("Debug_Mode_Change")
         self.BPM_SHOW = QtWidgets.QGroupBox(self.DEBUG_BOX)
         self.BPM_SHOW.setGeometry(QtCore.QRect(10, 25, 301, 101))
@@ -77,6 +77,10 @@ class Ui_MainWindow(object):
         font.setPointSize(26)
         self.ALL_SET.setFont(font)
         self.ALL_SET.setObjectName("ALL_SET")
+        self.Debug_Mode_Text = QtWidgets.QLabel(self.DEBUG_BOX)
+        self.Debug_Mode_Text.setGeometry(QtCore.QRect(330, 40, 201, 16))
+        self.Debug_Mode_Text.setAlignment(QtCore.Qt.AlignCenter)
+        self.Debug_Mode_Text.setObjectName("Debug_Mode_Text")
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QtWidgets.QMenuBar(MainWindow)
         self.menubar.setGeometry(QtCore.QRect(0, 0, 558, 26))
@@ -102,9 +106,10 @@ class Ui_MainWindow(object):
         self.Pedal_ERR_Set.setText(_translate("MainWindow", "SET"))
         self.Pedal_ERR.setText(_translate("MainWindow", "Pedal_Err"))
         self.CAM.setTitle(_translate("MainWindow", "CAM"))
-        self.cam_lv.setText(_translate("MainWindow", "PPG_LV"))
+        self.cam_lv.setText(_translate("MainWindow", "CAM_LV"))
         self.cam_set.setText(_translate("MainWindow", "SET"))
         self.ALL_SET.setText(_translate("MainWindow", "ALL SET"))
+        self.Debug_Mode_Text.setText(_translate("MainWindow", "Debug_Mode_Disabled"))
 
 
 if __name__ == "__main__":

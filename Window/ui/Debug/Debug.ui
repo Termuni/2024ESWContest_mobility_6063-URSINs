@@ -30,9 +30,9 @@
      <property name="geometry">
       <rect>
        <x>330</x>
-       <y>40</y>
+       <y>70</y>
        <width>201</width>
-       <height>81</height>
+       <height>51</height>
       </rect>
      </property>
      <property name="text">
@@ -206,7 +206,7 @@
        </rect>
       </property>
       <property name="text">
-       <string>PPG_LV</string>
+       <string>CAM_LV</string>
       </property>
      </widget>
      <widget class="QPushButton" name="cam_set">
@@ -240,6 +240,22 @@
      </property>
      <property name="text">
       <string>ALL SET</string>
+     </property>
+    </widget>
+    <widget class="QLabel" name="Debug_Mode_Text">
+     <property name="geometry">
+      <rect>
+       <x>330</x>
+       <y>40</y>
+       <width>201</width>
+       <height>16</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Debug_Mode_Disabled</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignCenter</set>
      </property>
     </widget>
    </widget>
