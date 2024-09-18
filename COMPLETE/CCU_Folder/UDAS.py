@@ -21,7 +21,7 @@ class Racing_Wheel:
         self.clock, self.joysticks = self.Init_Racing_Wheel()
         self.status = status
         self.verbose = verbose
-        self.rc_value = [0, 0]
+        self.wheel_Value = [0, 0]
     
     #Racing Wheel 관련 시작 함수 실행, clock과 joystick을 반환함
     def Init_Racing_Wheel(self):
@@ -47,13 +47,13 @@ class Racing_Wheel:
             if event.type == pygame.JOYAXISMOTION:
                 if event.axis == 0:
                     self.status = 0
-                    self.rc_value[0] = max(20, min(160, self.rc_value[0] + int(event.value * 10)))
+                    self.wheel_Value[0] = max(20, min(160, self.wheel_Value[0] + int(event.value * 10)))
                 elif event.axis == 2:
                     self.status = 2
-                    self.rc_value[1] = max(0, self.rc_value[1] - int(event.value *5 +5))
+                    self.wheel_Value[1] = max(0, self.wheel_Value[1] - int(event.value *5 +5))
                 elif event.axis == 5:
                     self.status = 5
-                    self.rc_value[1] = min(100, self.rc_value[1] + int(event.value *5 +5))
+                    self.wheel_Value[1] = min(100, self.wheel_Value[1] + int(event.value *5 +5))
             elif event.type == pygame.JOYBUTTONDOWN:
                 if event.button == 0:
                     print("Button_Bottom Input")
@@ -151,7 +151,7 @@ class RC_Car_Control:
         self.servo.ChangeDutyCycle(servo_duty)
         print(f"servo_degree = {Servo_degree}")
         
-class Ultra_Sonic:
+class UDAS:
     '''
     해당 클래스는 초음파 값 획득하기 위한 클래스로
     클래스 호출 시 DANGER_DISTANCE를 설정합니다.
@@ -174,9 +174,6 @@ class Ultra_Sonic:
         '''
         1회 거리를 측정하는 함수, delay가 0.02
         '''
-        GPIO.output(self.GPIOPIN_TRIG, False)
-        time.sleep(0.01)
-
         GPIO.output(self.GPIOPIN_TRIG, True)
         time.sleep(0.01)
         GPIO.output(self.GPIOPIN_TRIG, False)
@@ -197,7 +194,7 @@ class Ultra_Sonic:
 
         return distance
 
-    def Upload_Stable_Distance(self, samples = 5):
+    def Update_Stable_Distance(self, samples = 5):
         '''
         5번 Sampling 해서 거리 평균 거리 측정
         '''
@@ -217,10 +214,10 @@ class Ultra_Sonic:
             distance = None
     
     
-def Init_ACPE():
-    global Ultra_Sonic_Set, Racing_Wheel_Set, RC_Car_Set
+def Init_UDAS():
+    global UDAS_Set, Racing_Wheel_Set, RC_Car_Set
     #변수 초기화
-    Ultra_Sonic_Set = Ultra_Sonic()
+    UDAS_Set = UDAS()
     Racing_Wheel_Set = Racing_Wheel()
     RC_Car_Set = RC_Car_Control()
     
@@ -234,7 +231,7 @@ def Get_Racing_Wheel_Status():
 
 def Get_Racing_Wheel_Value():
     global Racing_Wheel_Set
-    return Racing_Wheel_Set.rc_value
+    return Racing_Wheel_Set.wheel_Value
 
 # . RC Car
 def Get_RC_Car_DcMotor_Power():
@@ -255,12 +252,12 @@ def Set_RC_Car_Servo_Pos(value):
     
 # . Ultra Sonic
 def Get_Stable_Distance():
-    global Ultra_Sonic_Set
-    return Ultra_Sonic_Set.distance
+    global UDAS_Set
+    return UDAS_Set.distance
 
 def Get_DANGER_DISTANCE():
-    global Ultra_Sonic_Set
-    return Ultra_Sonic_Set.DANGER_DISTANCE
+    global UDAS_Set
+    return UDAS_Set.DANGER_DISTANCE
 
 # ============================ API Set (BOTTOM) ============================
 
@@ -293,15 +290,15 @@ def Init_Get_UltraSonic_Distance():
     
     Returns : Mean Distance Values
     '''
-    global Ultra_Sonic_Set, Racing_Wheel_Set
-    if (isinstance(Ultra_Sonic_Set, Ultra_Sonic) == False):
-        Init_ACPE()
+    global UDAS_Set, Racing_Wheel_Set
+    if (isinstance(UDAS_Set, UDAS) == False):
+        Init_UDAS()
         return
     
     try:        
         # 쓰레딩으로 데이터 한 번에 수집 
-        ultra_sonic_thread = threading.Thread(
-            target=Ultra_Sonic_Set.Upload_Stable_Distance, 
+        udas_thread = threading.Thread(
+            target=UDAS_Set.Update_Stable_Distance, 
             args=()
         )
         racing_wheel_thread = threading.Thread(
@@ -310,10 +307,12 @@ def Init_Get_UltraSonic_Distance():
         )
         
         # 스레딩 시작
-        ultra_sonic_thread.start()
+        udas_thread.start()
+        racing_wheel_thread.start()
 
         #스레드 끝날대 까지 기다리기
-        ultra_sonic_thread.join()
+        udas_thread.join()
+        racing_wheel_thread.join()
         
     except KeyboardInterrupt:
         print("monitoring stopped")

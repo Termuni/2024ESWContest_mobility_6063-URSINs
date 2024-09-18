@@ -14,7 +14,7 @@ import time
 #         sys.path.append(full_path)
 
 #==================CUSTOM IMPORT==================
-import ACPE_Renewal as acpe
+import COMPLETE.CCU_Folder.UDAS as udas
 import BPM as bpm
 import WindowCall as wind
 import Warning_Score_Calculator as warn
@@ -28,15 +28,15 @@ def Init_CCU():
     global GPIO
     global pedal_error
     global serial, tcp
-    global debug_mode, mode_change_input, warning_score, hasWarned, remote_Mode
+    global debug_mode, mode_change_input, warning_score, hasWarned, remote_Mode, wheel_Value
     
     # 1. SET GPIO
     GPIO.setmode(GPIO.BCM) #Pin Mode : GPIO
     #GPIO.setmode(GPIO.BOARD)  #Pin Mode : BOARD
     
     # 2. Init acpe
-    acpe.Init_ACPE()
-    acpe.Init_Get_UltraSonic_Distance()
+    udas.Init_UDAS()
+    udas.Init_Get_UltraSonic_Distance()
     pedal_error = False
     
     # 3. Init bpm
@@ -55,6 +55,7 @@ def Init_CCU():
     warning_score = 0
     hasWarned = False
     remote_Mode = False
+    wheel_Value = [0, 0]
     
 
 
@@ -75,17 +76,16 @@ if __name__ == "__main__":
         while True:
             # ================ 1. Debug Mode Set ================
             if mode_change_input:
-                debug_mode = not debug_mode
                 mode_change_input = not mode_change_input
-                if debug_mode:
+                if not debug_mode:
+                    debug_mode = not debug_mode
                     print("DEBUG MODE ACTIVATE")
                 else:
+                    debug_mode = not debug_mode
                     print("DEBUG MODE DEACTIVATE")
                 
-                
-            # ================ 2. Set Values of Racing Wheel ================
-            acpe.Update_RC_Car_Duty_Cycle()
-            
+            # ================ 2. Get Values of Racing Wheel ================
+            wheel_Value = udas.Get_Racing_Wheel_Value()
             
             # ================ 3. Warning Lv Calculate By Algorithm ================
             #If Debug Mode
@@ -95,7 +95,7 @@ if __name__ == "__main__":
                 
             #Else Getting Sensor Value
             else:
-                pedal_error = acpe.Check_Pedal_Error()
+                pedal_error = udas.Check_Pedal_Error()
                 cam_lv = 0
                 warning_score = warn.Calculate_Warning_Score(bpm.ppg_bpm_level, bpm.ecg_bpm_level, cam_lv, pedal_error, warning_score)
                 
@@ -160,19 +160,17 @@ if __name__ == "__main__":
             
             # ================ 5. ACPE ================
             #If There Is Nothing Blocking Front
-                #Sending Motor and Submotor Value
-            acpe.Racing_Wheel_Test.Print_Input()
-                    
-            #Else Something Blocking Front
             if not pedal_error:
-                acpe.Mode_Controller.Control_Car()
-                print("ACPE ACTIVE")
+                #Sending Motor and Submotor Value
+                udas.Update_RC_Car_Duty_Cycle()
+                udas.Set_RC_Car_Servo_Pos()
+
             
     except:
         print("END")
         
     finally:
-        acpe.RC_Car.Stop_MOTOR()
+        udas.RC_Car.Stop_MOTOR()
         GPIO.cleanup()
         print("CLEAN")
 
