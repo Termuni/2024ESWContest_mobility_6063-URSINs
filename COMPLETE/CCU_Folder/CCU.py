@@ -46,6 +46,7 @@ def Init_CCU():
     bpm.Init_Get_BPM_Data()
     
     # 4. Init Monitor
+    wind.Show_Window('Debug')
     
     # 5. Init Communication
     serial = wcom.Init_UART()
@@ -91,13 +92,12 @@ if __name__ == "__main__":
             # ================ 3. Warning Lv Calculate By Algorithm (In Progress)================
             #If Debug Mode (In Progress)
             if debug_mode:
-                # Debug_INPUT()
-                0
+                Debug_INPUT(wind.Get_Debug_PPG_Lv(), wind.Get_Debug_ECG_Lv(), wind.Get_Debug_CAM_Lv(), wind.Get_Debug_Pedal_ERR(), wind.Get_Warning_Score())
                 
             #Else Getting Sensor Value
             else:
                 pedal_error = udas.Check_Pedal_Error()
-                cam_lv = 0
+                cam_lv = 0  
                 warning_score = warn.Calculate_Warning_Score(
                     bpm.Get_PPG_BPM_Data(), bpm.Get_ECG_BPM_Data(), cam_lv, pedal_error, warning_score)
                 

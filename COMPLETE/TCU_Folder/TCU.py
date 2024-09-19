@@ -7,7 +7,8 @@ import sys
 sys.path.append(os.path.dirname(os.path.dirname(__path__)))
 
 #==================CUSTOM IMPORT==================
-from Communication import TCU_Socket_Receive as tcu_R
+import TCP_IP_Communication as wlcom
+import UART_Communication as wcom
 #==================CUSTOM IMPORT==================
 
 #Init
@@ -17,8 +18,8 @@ def Init_TCU():
     GPIO.setmode(GPIO.BCM) #Pin Mode : GPIO
     #GPIO.setmode(GPIO.BOARD)  #Pin Mode : BOARD
        
-    # 2. SET TCU-R
-    tcu_R.While_Server(tcu_R.Start_Server()) 
+    # 2. Init Communication
+    
     
     # 3. SET extra Datas
     debug_mode = False

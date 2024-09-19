@@ -3,6 +3,9 @@ import mediapipe as mp
 import time
 import numpy as np
 from scipy.spatial import distance
+
+import UART_Communication as wcom
+
 # 위험도 계산 관련 변수
 SLEEPY_THRESHOLD_EAR = 0.1  # EAR이 이 값 이하일 때 눈이 감겼다고 간주
 MAX_SCORE = 100  # 최대 점수
