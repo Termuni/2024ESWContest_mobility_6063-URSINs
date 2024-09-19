@@ -1,7 +1,0 @@
-{
-    "python.analysis.extraPaths": [
-        "./ui/Debug",
-        "./ui/Lv1",
-        "./ui/Lv2"
-    ]
-}
