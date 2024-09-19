@@ -64,5 +64,5 @@ def Close_Debug_Window():
 
 #endregion API Set
 
-while True:
-    Show_Window(input("Input Lv : "))
+# while True:
+# Show_Window(input("Input Lv : "))

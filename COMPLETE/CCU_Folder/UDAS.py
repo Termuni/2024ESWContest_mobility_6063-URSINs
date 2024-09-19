@@ -220,7 +220,27 @@ def Init_UDAS():
     UDAS_Set = UDAS()
     Racing_Wheel_Set = Racing_Wheel()
     RC_Car_Set = RC_Car_Control()
-    
+
+#region ============================ Threading Set (TOP) ============================
+
+def Threading_UltraSonic():
+    global UDAS_Set
+    try:
+        while True:
+            UDAS_Set.Update_Stable_Distance()
+    except KeyboardInterrupt:
+        print("Ultrasonic Stopped")
+
+def Threading_RacingWheel():
+    global Racing_Wheel_Set
+    try:
+        while True:
+            Racing_Wheel_Set.Update_Input_Value()
+    except KeyboardInterrupt:
+        print("RacingWheel Check Stopped")
+
+
+#endregion ============================ Threading Set (BOTTOM) ============================
     
 #region ============================ API Set (TOP) ============================
 
@@ -296,11 +316,11 @@ def Init_Get_UltraSonic_Distance():
     try:        
         # 쓰레딩으로 데이터 한 번에 수집 
         udas_thread = threading.Thread(
-            target=UDAS_Set.Update_Stable_Distance, 
+            target=Threading_UltraSonic, 
             args=()
         )
         racing_wheel_thread = threading.Thread(
-            target=Racing_Wheel_Set.Update_Input_Value,
+            target=Threading_RacingWheel,
             args=()
         )
         

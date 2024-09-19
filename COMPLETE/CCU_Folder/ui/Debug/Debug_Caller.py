@@ -6,7 +6,7 @@ import Debug
 form_class = uic.loadUiType("C:\\SeonMin\\Embedded_SW\\COMPLETE\\CCU_Folder\\ui\\Debug\\Debug.ui")[0] 
 flag_Clicked = False
 
-class Mywindow(QDialog, form_class ):
+class Mywindow(QMainWindow, form_class ):
     def __init__(self):
         super().__init__()
         self.setupUi(self)

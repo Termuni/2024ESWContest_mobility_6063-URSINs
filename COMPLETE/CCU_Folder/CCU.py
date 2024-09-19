@@ -71,6 +71,7 @@ if __name__ == "__main__":
     try:
         #INIT VALUES
         Init_CCU()
+        wind.Show_Window('Debug')
         print("START PROCESSING")
         
         while True:
