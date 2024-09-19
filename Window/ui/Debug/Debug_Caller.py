@@ -103,5 +103,5 @@ def Open_Window():
     test_Thread.start()
     test_Thread.join()
     
-while True:
-    Open_Window()
+# while True:
+#     Open_Window()

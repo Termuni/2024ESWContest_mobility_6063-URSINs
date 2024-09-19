@@ -3,6 +3,10 @@
 '''
 #import
 import sys, os
+import time
+
+from PyQt5.QtCore import *
+from PyQt5.QtWidgets import *
 
 window_path = "C:/SeonMin/Embedded_SW/Window/ui"
 sub_paths = ["Debug", "Lv1", "Lv2"]#, "Lv3", "Lv4"]
@@ -20,13 +24,27 @@ import Lv1_Warning_Caller as lv1
 import Lv2_Warning_Caller as lv2
 #==================CUSTOM IMPORT==================
 
+
+class WindowThread(QThread):
+    def __init__(self, level):
+        super().__init__()
+        self.level = level
+
+    def run(self):
+        if self.level == 'debug':
+            dbg.Open_Window()
+            time.sleep(1)  # 창을 1초 동안 열어둠
+            dbg.Close_Debug_Window()
+
 def Show_Window(level):
     if level == 'a':
         lv1.Show_Window()
     if level == 2:
         lv2.Show_Window()
     if level == 'debug':
-        dbg.Open_Window()
+        # 새로운 스레드에서 창을 열고 닫는 동작을 비동기적으로 수행
+        window_thread = WindowThread('debug')
+        window_thread.start()
 
 
 #region API Set
@@ -66,4 +84,7 @@ def Close_Debug_Window():
 #endregion API Set
 
 while True:
-    Show_Window(input("Input Lv : "))
+    print("Debug TESTING")
+    Show_Window('debug')
+    time.sleep(1)
+    Close_Debug_Window()
