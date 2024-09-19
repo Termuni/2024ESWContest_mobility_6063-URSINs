@@ -13,7 +13,7 @@ import UART_Communication as wcom
 
 #Init
 def Init_TCU():
-    global GPIO, debug_mode, mode_change_input, control, warning_LV
+    global GPIO, debug_mode, mode_change_input, wheel_value, warning_LV
     # 1. SET GPIO
     GPIO.setmode(GPIO.BCM) #Pin Mode : GPIO
     #GPIO.setmode(GPIO.BOARD)  #Pin Mode : BOARD
@@ -25,7 +25,7 @@ def Init_TCU():
     debug_mode = False
     mode_change_input = False
     warning_LV = 0
-    control = np.zeros(3)
+    wheel_value = ['0', '0']
 
 
 #====================Main==================
@@ -62,9 +62,7 @@ try:
         
             #Sending Handling Data to CCU
             
-            #Get Data from Center? -> Get What?
-            control = tcu_R.While_Server()
-        
+            
         
         
         print("")

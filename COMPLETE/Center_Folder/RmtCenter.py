@@ -10,24 +10,23 @@ import UDAS as udas
 def Init_Rmt_Center():
     global pedal_error
     
-    #
+    # 1. Init Communication
+    
+    # 2. SET extra Datas
+    
 
 #====================Main==================
 
 try:
     #INIT VALUES
-    #Set Class
-
-
+    Init_Rmt_Center()
     print("ACTIVE PROCESS")
+    
     while True:
         print("IN PROCESSING")
         #If Warning LV 2 Received
         
             #Show Inside CAM
-        
-            #Receive Sound Data from TCU?
-        
         
         
         #If Warning LV 3 Received
@@ -36,7 +35,6 @@ try:
         
             #Sending Handle Data
         
-            #Sending Sound Data?
         
         
         
