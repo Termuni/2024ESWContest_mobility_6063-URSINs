@@ -1,11 +1,9 @@
 import sys
 from PyQt5.QtWidgets import *
-from PyQt5.QtCore import *
 from PyQt5 import uic
-import Debug_Dialog
-import threading
+import Debug
 
-form_class = uic.loadUiType("C:\\SeonMin\\Embedded_SW\\Window\\ui\\Debug\\Debug_Dialog.ui")[0] 
+form_class = uic.loadUiType("C:\\SeonMin\\Embedded_SW\\COMPLETE\\CCU_Folder\\ui\\Debug\\Debug.ui")[0] 
 flag_Clicked = False
 
 class Mywindow(QDialog, form_class ):
@@ -67,7 +65,7 @@ def Show_Window():
     app = QApplication(sys.argv)
     myWindow = Mywindow()
     myWindow.show()
-    sys.exit(app.exec_())
+    app.exec_()
     #return app
 
 #region API Set
@@ -98,10 +96,4 @@ def Close_Debug_Window():
 
 #endregion API Set
 
-def Open_Window():
-    test_Thread = threading.Thread(target=Show_Window)
-    test_Thread.start()
-    test_Thread.join()
-    
-while True:
-    Open_Window()
+# Show_Window()

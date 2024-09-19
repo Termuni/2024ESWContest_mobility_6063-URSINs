@@ -26,7 +26,7 @@ def Show_Window(level):
     if level == 2:
         lv2.Show_Window()
     if level == 'debug':
-        dbg.Show_Window()
+        dbg.Open_Window()
 
 
 #region API Set
@@ -65,4 +65,5 @@ def Close_Debug_Window():
 
 #endregion API Set
 
-Show_Window(input("Input Lv : "))
+while True:
+    Show_Window(input("Input Lv : "))
