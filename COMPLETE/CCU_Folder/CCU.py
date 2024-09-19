@@ -116,9 +116,9 @@ if __name__ == "__main__":
                 if not hasWarned:    
                     #LCD Alarm
                     hasWarned = True
-                    wind.Show_Window(1)
+                    wind.Show_Window('Lv1')
                 else:
-                    if (hasWarned) and (not wind.lv1.flag_Clicked):
+                    if (hasWarned) and (wind.Get_Lv1_Flag()):
                         #얼마나 빨리 많이 올릴 것인지?
                         warning_score = warning_score + 0.01
                     else:

@@ -1,68 +1,102 @@
-'''
-이 스크립트에서 각 레벨별 윈도우 부를 예정입니다.
-'''
-#import
-import sys, os
-window_path = "C:/SeonMin/Embedded_SW/COMPLETE/CCU_Folder/ui"
-sub_paths = ["Debug", "Lv1", "Lv2"]#, "Lv3", "Lv4"]
+import threading
+import tkinter as tk
+from tkinter import messagebox
 
-for sub_path in sub_paths:
-    full_path = os.path.join(window_path, sub_path)
+global lv1_activate
+lv1_activate = False
+
+# 첫 번째 UI 창
+def Create_Debug_Window():
+    window1 = tk.Tk()
+    window1.title("Debug UI")
     
-    # 경로를 sys.path에 추가
-    if full_path not in sys.path:
-        sys.path.append(full_path)
+    # Debug 모드 변수
+    debug_mode = tk.StringVar(value="Debug_Mode_Disabled")
 
-#==================CUSTOM IMPORT==================
-import Debug_Caller as dbg
-import Lv1_Warning_Caller as lv1
-import Lv2_Warning_Caller as lv2
-#==================CUSTOM IMPORT==================
+    def Toggle_Debug_Mode():
+        if debug_mode.get() == "Debug_Mode_Disabled":
+            debug_mode.set("Debug_Mode_Enabled")
+        else:
+            debug_mode.set("Debug_Mode_Disabled")
+    
+    # BPM (PPG_LV, ECG_LV)
+    tk.Label(window1, text="BPM").grid(row=0, column=0)
+    tk.Label(window1, text="PPG_LV").grid(row=1, column=0)
+    ppg_lv = tk.Entry(window1)
+    ppg_lv.grid(row=1, column=1)
+    tk.Button(window1, text="SET", command=lambda: print("PPG_LV:", ppg_lv.get())).grid(row=1, column=2)
+
+    tk.Label(window1, text="ECG_LV").grid(row=2, column=0)
+    ecg_lv = tk.Entry(window1)
+    ecg_lv.grid(row=2, column=1)
+    tk.Button(window1, text="SET", command=lambda: print("ECG_LV:", ecg_lv.get())).grid(row=2, column=2)
+
+    # Debug 모드 전환 버튼
+    tk.Label(window1, textvariable=debug_mode).grid(row=0, column=3)
+    tk.Button(window1, text="DEBUG_MODE_CHANGE", command=Toggle_Debug_Mode).grid(row=1, column=3)
+
+    # CAM (CAM_LV)
+    tk.Label(window1, text="CAM").grid(row=3, column=0)
+    tk.Label(window1, text="CAM_LV").grid(row=4, column=0)
+    cam_lv = tk.Entry(window1)
+    cam_lv.grid(row=4, column=1)
+    tk.Button(window1, text="SET", command=lambda: print("CAM_LV:", cam_lv.get())).grid(row=4, column=2)
+
+    # UDAS (Pedal Err 체크박스)
+    tk.Label(window1, text="UDAS").grid(row=5, column=0)
+    pedal_err = tk.IntVar()
+    tk.Checkbutton(window1, text="Pedal Err", variable=pedal_err).grid(row=6, column=0)
+    tk.Button(window1, text="SET", command=lambda: print("Pedal Err:", pedal_err.get())).grid(row=6, column=2)
+
+    # ALL SET 메시지
+    tk.Button(window1, text="ALL SET", command=lambda: print(f"All Set: {ppg_lv.get(), ecg_lv.get(), cam_lv.get(), pedal_err.get()}")).grid(row=5, column=2, rowspan=6)
+
+    window1.mainloop()
+
+# 두 번째 UI 창
+def Create_Warning_Lv1_Window():
+    window2 = tk.Tk()
+    window2.title("Second UI")
+
+    def On_Button_Click():
+        Set_Lv1_Flag_Deactive()
+        window2.destroy()
+
+    # 경고 메시지 출력
+    warning_message = tk.Label(window2, text="조심하세요!! 지금 졸고 계십니다!!!", font=("Arial", 14))
+    warning_message.grid(row=0, column=1)
+
+    # 버튼
+    button = tk.Button(window2, text="PushButton", command=On_Button_Click)
+    button.grid(row=0, column=0)
+
+    window2.mainloop()
+
 
 def Show_Window(level):
-    if level == 'a':
-        lv1.Show_Window()
-    if level == 2:
-        lv2.Show_Window()
-    if level == 'debug':
-        dbg.Show_Window()
+    if level == 'Debug':
+        thread_debug = threading.Thread(
+            target= Create_Debug_Window,
+            args=()
+        )
+        thread_debug.start()
+    elif level == 'Lv1':
+        Set_Lv1_Flag_Active()
+        thread_lv1 = threading.Thread(
+            target= Create_Warning_Lv1_Window,
+            args=()
+        )
+        thread_lv1.start()
+        
+        
+def Get_Lv1_Flag():
+    global lv1_activate
+    return lv1_activate
 
-
-#region API Set
-
-#region LV1 API
-
-def Get_LV1_BTN_Clicked():
-    return lv1.Get_BTN_Clicked()
-
-def Close_LV1_Window():
-    lv1.Close_LV1_Window()
-
-#endregion LV1 API
-
-#region Debugging API
-
-def Get_Debug_PPG_LV():
-    return dbg.Get_Debug_PPG_LV
-
-def Get_Debug_ECG_LV():
-    return dbg.Get_Debug_ECG_LV
-
-def Get_Debug_CAM_LV():
-    return dbg.Get_Debug_CAM_LV
-
-def Get_Debug_Pedal_ERR():
-    return dbg.Get_Debug_Pedal_ERR
-
-def Get_Debug_Mode():
-    return dbg.Get_Debug_Mode
-
-def Close_Debug_Window():
-    dbg.Close_Debug_Window()
-
-#endregion Debugging API
-
-#endregion API Set
-
-# while True:
-# Show_Window(input("Input Lv : "))
+def Set_Lv1_Flag_Active():
+    global lv1_activate
+    lv1_activate = True
+    
+def Set_Lv1_Flag_Deactive():
+    global lv1_activate
+    lv1_activate = False
