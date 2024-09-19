@@ -1,0 +1,40 @@
+1. TCP 통신 정리
+ - 서버용, 클라이언트용 정리
+ - 데이터 송수신용 코드
+ 
+2. UART 통신 정리
+ - 통신 패키지 정리
+ 
+3. ACPE 정리
+ Vervos -> 어디에 쓰이는건지??
+ 1) Communication_Remote Center 클래스 -> init시 GPIO 설정, 센터에서 오는 조향각 및 파워 설정
+	Interpret_Packet 함수 통해 Main에서 지속 통신
+		이때 packet = [1, 111, 41]로 설정 되어있고, 맨 앞의 1이 0이 되면 Manual
+		뒤의 111, 41은 센터에서 오는 steering과 power
+ 2) Mode_Control 클래스 -> init시 모드 설정
+	Switch_Mode 함수 통해 모드 변경
+	Control_Car 함수 통해 모드 따라 RC_Car의 값 변경 -> 이거 가능?? 안 될 것 같아보임, 외부 선언된 값을 받아와야 함	
+ 3) RC_Car_Control -> init시 GPIO, servo, pwm, ... 등 설정
+	Setup_DC_Motor 함수 통해 모터의 GPIO 설정 및 Output 설정 -> GPIO 설정은 한 번만 하고, output을 다른 상황에서 하도록 설정해야 할 것 같음
+	Stop_MOTOR 함수 통해 GPIO PWM 멈춤
+	Change_Duty_Cycle 함수 통해 PWM Duty Cycle 변화시킴
+	Setup_Servo_Motor 함수 통해 서브모터 설정 및 PWM 출력, Start
+	setServoPos 함수 통해 서보모터 위치 제어
+ 4) Racing_Wheel 클래스 -> init시 clock, joystick, status 등 설정
+	Init_Racing_Wheel 함수 통해 clock과 joystick 반환
+	Set_Clock 함수 통해 clock 설정
+	Get_Joystick 함수 통해 joystick 획득
+	Get_Input() 함수 통해 조향 및 페달 값 획득
+ 5) ACPE 클래스 -> init시 GPIO 설정, 설정된 값으로 Setup
+	Measure_Distance 함수로 1회 초음파 센서 거리 측정
+	Get_Stable_Distance 함수로 초음파 sampling 횟수만큼 거리 측정
+	Check_Pedal_Error 함수로 페달 오조작 감지
+	
+ 1] Racing_Wheel 값 받아오는 클래스 하나
+ 2] RC_Car 조종하는 클래스 하나
+ 3] Ultra_Sonic 값 받아오는 클래스 하나
+ 4] 
+	
+4. 초음파 Thread로 받을 방법 구상
+
+5. CCU, TCU, DMU 정리
