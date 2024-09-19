@@ -34,12 +34,14 @@ def Init_CCU():
     
     # 1. SET GPIO
     GPIO.setmode(GPIO.BCM) #Pin Mode : GPIO
+    print("1:COMPLETED")
     #GPIO.setmode(GPIO.BOARD)  #Pin Mode : BOARD
     
     # 2. Init acpe
     udas.Init_UDAS()
     udas.Init_Get_UltraSonic_Distance()
     pedal_error = False
+    print("2:COMPLETED")
     
     # 3. Init bpm
     bpm.Init_BPM()
@@ -59,6 +61,9 @@ def Init_CCU():
     hasWarned = False
     remote_Mode = False
     wheel_Value = [0, 0]
+    print("6:COMPLETED")
+    
+    
 
 def Debug_INPUT(d_ppg_lv, d_ecg_lv, d_cam_lv, d_pedal_error, warning_score):
     #Debug Input Mode Activate
@@ -93,6 +98,7 @@ if __name__ == "__main__":
             #If Debug Mode (In Progress)
             if debug_mode:
                 Debug_INPUT(wind.Get_Debug_PPG_Lv(), wind.Get_Debug_ECG_Lv(), wind.Get_Debug_CAM_Lv(), wind.Get_Debug_Pedal_ERR(), wind.Get_Warning_Score())
+
                 
             #Else Getting Sensor Value
             else:
