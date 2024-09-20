@@ -8,7 +8,7 @@ import UDAS as udas
 #==================CUSTOM IMPORT==================
 
 def Init_Rmt_Center():
-    global pedal_error
+    global server_Socket, data_to_TCU, wheel_value
     
     # 1. Init Communication
     
