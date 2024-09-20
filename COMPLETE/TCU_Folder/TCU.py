@@ -14,13 +14,16 @@ import UART_Communication as wcom
 #Init
 def Init_TCU():
     global GPIO
-    global cTt_Ser, data_to_CCU, data_from_CCU
+    global client_Socket, cTt_Ser, data_to_CCU, data_from_CCU, HOST, PORT
     global debug_mode, mode_change_input, wheel_value, warning_LV
     # 1. SET GPIO
     GPIO.setmode(GPIO.BCM) #Pin Mode : GPIO
     #GPIO.setmode(GPIO.BOARD)  #Pin Mode : BOARD
        
     # 2. Init Communication
+    HOST = '10.211.173.2'  # 서버 VPN IP
+    PORT = 9091  # 서버와 동일한 포트 사용
+    client_Socket = wlcom.Init_Client_Socket(HOST, PORT)
     cTt_Ser = wcom.Init_UART(port="/dev/serial0") #CCU ~ TCU Serial
     data_to_CCU = "0,0"
     data_from_CCU = None
@@ -41,7 +44,7 @@ try:
     print("ACTIVE PROCESSING")
     while True:
         
-        data_from_CCU = wcom.Receive_Data(cTt_Ser)
+        data_from_CCU = wcom.Receive_Data(cTt_Ser).decode()
         warning_LV = int(data_from_CCU)
         
         #If Debug Mode
@@ -55,16 +58,13 @@ try:
                 #Else Getting Sensor Value
                 print("DEBUG MODE DEACTIVATE")
                 
-        
         #If Warning Lv 2
         if warning_LV == 2:
             #Streaming Inside CAM
             print("Streaming Inside CAM")
         
-        
-        
         #If Warning Lv 3
-        if warning_LV == 3:
+        elif warning_LV == 3:
             #Get Data From Center
             #Streaming Outside CAM
             print("Streaming Outside CAM")
@@ -72,11 +72,9 @@ try:
             data_to_CCU = f'{wheel_value[0]},{wheel_value[1]}'
             wcom.Send_Data(cTt_Ser, data_to_CCU)
         
-        
-        print("")
-        
 except:
     print("END")
     
 finally:
+    wlcom.Close_Socket(client_Socket)
     print("CLEAN")

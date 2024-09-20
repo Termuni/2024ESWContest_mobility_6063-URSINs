@@ -1,18 +1,26 @@
-
 import sys, os
 import time
 
 #==================CUSTOM IMPORT==================
 import TCP_IP_Communication as wlcom
-import UDAS as udas
+import RC_Wheel as wheel
 #==================CUSTOM IMPORT==================
 
 def Init_Rmt_Center():
-    global server_Socket, data_to_TCU, wheel_value
+    global server_Socket, data_to_TCU, data_from_TCU
+    global wheel_value, warning_LV
     
     # 1. Init Communication
+    server_Socket = wlcom.Init_Server_Socket()
+    data_to_TCU = "Test"
+    data_from_TCU = None
+    
+    # . Init Racing_Wheel
+    wheel.Init_Get_Wheel_Value()
     
     # 2. SET extra Datas
+    wheel_value = [0, 0]
+    warning_LV = 0
     
 
 #====================Main==================
@@ -23,21 +31,29 @@ try:
     print("ACTIVE PROCESS")
     
     while True:
+        data_from_TCU = wlcom.Receive_Socket(server_Socket).decode()
+        warning_LV = int(data_from_TCU)
+        
         print("IN PROCESSING")
         #If Warning LV 2 Received
-        
+        if warning_LV == 2:
+            print("WARNING : Driver is danger in now")
             #Show Inside CAM
         
         
         #If Warning LV 3 Received
+        elif warning_LV == 3:
+            print("REMOTE CONTROL ACTIVATE")
         
             #Show Front CAM
         
             #Sending Handle Data
+            wheel_value = wheel.Get_Racing_Wheel_Value()
+            data_to_TCU = f'{wheel_value[0]},{wheel_value[1]}'
+            wlcom.Send_Socket(server_Socket, data_to_TCU)
         
+        time.sleep(0.01)
         
-        
-        
-        print("")
-except:
+except KeyboardInterrupt:
+    wlcom.Close_Socket(server_Socket)
     print("END")

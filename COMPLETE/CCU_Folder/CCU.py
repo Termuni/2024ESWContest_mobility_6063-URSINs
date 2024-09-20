@@ -33,6 +33,7 @@ def Init_CCU():
     global cam_lv, warning_score
     global debug_mode, mode_change_input, hasWarned, remote_Mode, wheel_Value
     
+    GPIO.cleanup()
     
     # 1. SET GPIO
     GPIO.setmode(GPIO.BCM) #Pin Mode : GPIO
@@ -89,7 +90,6 @@ if __name__ == "__main__":
     try:
         #INIT VALUES
         Init_CCU()
-        wind.Show_Window('Debug')
         print("START PROCESSING")
         
         while True:
@@ -189,8 +189,8 @@ if __name__ == "__main__":
     finally:
         wcom.Close_UART(cTt_Ser)
         wcom.Close_UART(dTc_Ser)
-        udas.RC_Car.Stop_MOTOR()
-        GPIO.cleanup()
+        udas.RC_Car_Set.Stop_MOTOR()
+        
         print("CLEAN")
 
 #====================Main(END)==================

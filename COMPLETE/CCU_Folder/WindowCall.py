@@ -106,7 +106,7 @@ def Show_Window(level):
         )
         thread_lv1.start()
 
-Show_Window('Debug')
+# Show_Window('Debug')
 
 # 플래그 및 값 GET/SET 함수들
 #region API Set
