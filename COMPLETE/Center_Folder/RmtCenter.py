@@ -10,7 +10,7 @@ def Init_Rmt_Center():
     global server_Socket, data_to_TCU, data_from_TCU
     global wheel_value, warning_LV
     
-    # 1. Init Communication
+    # . Init Communication
     server_Socket = wlcom.Init_Server_Socket()
     data_to_TCU = "Test"
     data_from_TCU = None
@@ -18,7 +18,7 @@ def Init_Rmt_Center():
     # . Init Racing_Wheel
     wheel.Init_Get_Wheel_Value()
     
-    # 2. SET extra Datas
+    # . SET extra Datas
     wheel_value = [0, 0]
     warning_LV = 0
     
@@ -32,7 +32,8 @@ try:
     
     while True:
         data_from_TCU = wlcom.Receive_Socket(server_Socket).decode()
-        warning_LV = int(data_from_TCU)
+        if data_from_TCU != '':
+            warning_LV = int(data_from_TCU)
         
         print("IN PROCESSING")
         #If Warning LV 2 Received

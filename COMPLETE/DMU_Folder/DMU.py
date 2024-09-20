@@ -237,7 +237,7 @@ def main():
     
     #INIT_UART
     dTc_Ser = wcom.Init_UART(port="/dev/serial0") #CCU ~ DMU Serial
-    data_to_CCU = "Hello CCU\n"
+    data_to_CCU = "0,0,0"
     
     #INIT_CAM
     cap = initialize_camera()
@@ -263,9 +263,9 @@ def main():
             drowsy_detected, alert_start_time = display_alert(image, total_drowsiness_score, drowsy_detected, alert_start_time)
 
             # 레벨 계산 및 전송
-            drowsiness_level = get_drowsiness_level(total_drowsiness_score)
             ppg_lv = bpm.Get_PPG_BPM_Data()
             ecg_lv = bpm.Get_ECG_BPM_Data()
+            drowsiness_level = get_drowsiness_level(total_drowsiness_score)
             data_to_CCU = f'{ppg_lv},{ecg_lv},{drowsiness_level}'
             wcom.Send_Data(dTc_Ser, data_to_CCU)
 

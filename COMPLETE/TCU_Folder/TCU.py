@@ -26,7 +26,7 @@ def Init_TCU():
     client_Socket = wlcom.Init_Client_Socket(HOST, PORT)
     cTt_Ser = wcom.Init_UART(port="/dev/serial0") #CCU ~ TCU Serial
     data_to_CCU = "0,0"
-    data_from_CCU = None
+    data_from_CCU = '0'
     
     # 3. SET extra Datas
     debug_mode = False
@@ -45,7 +45,8 @@ try:
     while True:
         
         data_from_CCU = wcom.Receive_Data(cTt_Ser).decode()
-        warning_LV = int(data_from_CCU)
+        if warning_LV != '':
+            warning_LV = int(data_from_CCU)
         
         #If Debug Mode
         if mode_change_input:

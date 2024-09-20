@@ -61,8 +61,8 @@ def Init_CCU():
     cTt_Ser = wcom.Init_UART(port="/dev/serial0") #CCU ~ TCU Serial
     dTc_Ser = wcom.Init_UART(port="/dev/ttyAMA3") #CCU ~ DMU Serial
     data_to_TCU = "Hello TCU\n"
-    data_from_TCU = None
-    data_from_DMU = None
+    data_from_TCU = '0'
+    data_from_DMU = '0'
     data_to_DMU = 'test\n'
     print("5:COMPLETED")
     
@@ -106,9 +106,14 @@ if __name__ == "__main__":
                 data_from_TCU = wcom.Receive_Data(cTt_Ser)
                 dmu_datas = data_from_DMU.split(',')
                 tcu_datas = data_from_TCU.split(',')
-                ppg_lv = int(dmu_datas[0])
-                ecg_lv = int(dmu_datas[1])
-                cam_lv = int(dmu_datas[2])
+                if len(dmu_datas) < 3:
+                    ppg_lv = 0
+                    ecg_lv = 0
+                    cam_lv = 0
+                else:
+                    ppg_lv = int(dmu_datas[0])
+                    ecg_lv = int(dmu_datas[1])
+                    cam_lv = int(dmu_datas[2])
                 pedal_error = udas.Check_Pedal_Error()
             #Calculate By Datas
             warning_score = warn.Calculate_Warning_Score(
