@@ -1,5 +1,4 @@
 import RPi.GPIO as GPIO #RPi.GPIO 라이브러리를 GPIO로 사용
-#from time import sleep  #time 라이브러리의 sleep함수 사용
 import time
 import sys
 import pygame
@@ -50,7 +49,6 @@ class Racing_Wheel:
                 if event.axis == 0:
                     self.status = 0
                     self.wheel_Value[0] = max(750, min(2250, ((50*(event.value* 10)) + 1500)))
-                    
                 elif event.axis == 2:
                     self.status = 2
                     self.wheel_Value[1] = max(0, self.wheel_Value[1] - int(event.value *5 +5))
@@ -137,28 +135,8 @@ class RC_Car_Control:
         SERVO_MAX_DUTY    = 12   # 서보의 최대(180도) 위치의 주기
         SERVO_MIN_DUTY    = 3    # 서보의 최소(0도) 위치의 주기
         '''
-
-
-        # 각도(degree)를 duty로 변경한다.
-        #servo_duty = SERVO_MIN_DUTY+(Servo_degree*(SERVO_MAX_DUTY-SERVO_MIN_DUTY)/180.0)
-       
-        # duty 값 출력
-        if self.verbose == True:
-            print("Degree: {} to {}(Duty)".format(Servo_degree, servo_duty))
-        
         pi.set_servo_pulsewidth(17,Servo_degree)
-        """
-        duty = (Servo_degree / 18) + 2
-        GPIO.output(17, True)
-        formatted_duty = round(duty, 1)
-        self.servo.ChangeDutyCycle(formatted_duty)
-        time.sleep(0.1)
-        GPIO.output(17, False)
-        #self.servo.stop()
-        self.servo.ChangeDutyCycle(0)
 
-        # 변경된 duty값을 서보 pwm에 적용
-        """
         print(f"servo_degree = {Servo_degree}")
        
 class UDAS:

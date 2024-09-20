@@ -2,8 +2,9 @@ import threading
 import tkinter as tk
 from tkinter import messagebox
 
-global lv1_activate, d_ppg_lv, d_ecg_lv, d_cam_lv, d_pedal_err, d_warning_score
+global lv1_activate, debug_mode_en, d_ppg_lv, d_ecg_lv, d_cam_lv, d_pedal_err, d_warning_score
 lv1_activate = False
+debug_mode_en = False
 d_ppg_lv = 0  # PPG_LV 디폴트 값
 d_ecg_lv = 0  # ECG_LV 디폴트 값
 d_cam_lv = 0  # CAM_LV 디폴트 값
@@ -11,7 +12,7 @@ d_warning_score = 0  # Warning Score 디폴트 값
 
 # 첫 번째 UI 창
 def Create_Debug_Window():
-    global d_ppg_lv, d_ecg_lv, d_cam_lv, d_pedal_err, d_warning_score
+    global debug_mode_en, d_ppg_lv, d_ecg_lv, d_cam_lv, d_pedal_err, d_warning_score
     debug_Window = tk.Tk()
     debug_Window.title("Debug UI")
     
@@ -19,6 +20,7 @@ def Create_Debug_Window():
     debug_mode = tk.StringVar(value="Debug_Mode_Disabled")
 
     def Toggle_Debug_Mode():
+        debug_mode_en = not debug_mode_en
         if debug_mode.get() == "Debug_Mode_Disabled":
             debug_mode.set("Debug_Mode_Enabled")
         else:
@@ -128,6 +130,9 @@ def Set_Debug_Lv1_Flag_Deactive():
 #region DEBUG
 
 #region GET_DEBUG
+def Get_Debug_Mode():
+    global debug_mode_en
+    return debug_mode_en
 
 def Get_Debug_PPG_Lv():
     global d_ppg_lv

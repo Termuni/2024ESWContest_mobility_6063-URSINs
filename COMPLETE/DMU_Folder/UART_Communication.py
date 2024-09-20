@@ -19,6 +19,7 @@ def Send_Data(ser, data = '0'):
     :param ser: 초기화된 serial 객체
     :param data: 전송할 문자열 데이터 (None이면 '0'을 전송)
     """
+    data = data + '\n'
     if isinstance(ser, serial.Serial):
         ser.write(data.encode('utf-8'))  # 데이터를 바이트 형태로 인코딩하여 전송
         print(f"Sent: {data}")  # 전송된 데이터 출력
