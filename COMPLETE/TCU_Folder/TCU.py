@@ -1,23 +1,24 @@
 #import
 import sys, os
-import RPi.GPIO as GPIO #RPi.GPIO 라이브러리를 GPIO로 사용
+#import RPi.GPIO as GPIO #RPi.GPIO 라이브러리를 GPIO로 사용
 import time
 import numpy as np
 import sys
-sys.path.append(os.path.dirname(os.path.dirname(__path__)))
+#sys.path.append(os.path.dirname(os.path.dirname(__path__)))
 
 #==================CUSTOM IMPORT==================
 import TCP_IP_Communication as wlcom
 import UART_Communication as wcom
+import Streaming as strm
 #==================CUSTOM IMPORT==================
 
 #Init
 def Init_TCU():
-    global GPIO
+    #global GPIO
     global client_Socket, cTt_Ser, data_to_CCU, data_from_CCU, HOST, PORT
     global debug_mode, mode_change_input, wheel_value, warning_LV
     # 1. SET GPIO
-    GPIO.setmode(GPIO.BCM) #Pin Mode : GPIO
+    #GPIO.setmode(GPIO.BCM) #Pin Mode : GPIO
     #GPIO.setmode(GPIO.BOARD)  #Pin Mode : BOARD
        
     # 2. Init Communication
@@ -27,6 +28,11 @@ def Init_TCU():
     cTt_Ser = wcom.Init_UART(port="/dev/serial0") #CCU ~ TCU Serial
     data_to_CCU = "0,0"
     data_from_CCU = '0'
+    print("COMPLETE COM")
+    
+    # . Init Streaming
+    strm.Setup_Camera()
+    
     
     # 3. SET extra Datas
     debug_mode = False
@@ -44,9 +50,29 @@ try:
     print("ACTIVE PROCESSING")
     while True:
         
-        data_from_CCU = wcom.Receive_Data(cTt_Ser).decode()
-        if warning_LV != '':
+        data_from_CCU = wcom.Receive_Data(cTt_Ser)
+        time.sleep(0.01)
+        
+        
+        data_to_Center = data_from_CCU
+        wlcom.Send_Socket(client_Socket, data_to_Center)
+        
+        data_from_Center = wlcom.Receive_Socket(client_Socket).decode()
+        center_Wheel_Value = data_from_Center.split(',')
+        
+        
+        if (data_from_CCU != '') and (data_from_CCU.isdecimal()):
             warning_LV = int(data_from_CCU)
+        
+        
+        if (data_from_Center != '') and (len(center_Wheel_Value) == 2) :
+            if (center_Wheel_Value[0].isdecimal()) and (center_Wheel_Value[1].isdecimal()):
+                wheel_value[0] = center_Wheel_Value[0]
+                wheel_value[1] = center_Wheel_Value[1]
+            
+        
+        
+        print(warning_LV, wheel_value)
         
         #If Debug Mode
         if mode_change_input:
@@ -63,6 +89,7 @@ try:
         if warning_LV == 2:
             #Streaming Inside CAM
             print("Streaming Inside CAM")
+            strm.Start_UV4L_Service()
         
         #If Warning Lv 3
         elif warning_LV == 3:
@@ -72,10 +99,15 @@ try:
             #Sending Handling Data to CCU
             data_to_CCU = f'{wheel_value[0]},{wheel_value[1]}'
             wcom.Send_Data(cTt_Ser, data_to_CCU)
+            
+        time.sleep(0.01)
         
-except:
+except:#Exception as e:
+    #print("Error! :",e)
+    wlcom.Close_Socket(client_Socket)
+    strm.Stop_UV4L_Service()
     print("END")
     
 finally:
-    wlcom.Close_Socket(client_Socket)
+    
     print("CLEAN")
