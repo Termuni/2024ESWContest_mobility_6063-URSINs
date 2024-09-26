@@ -1,1 +1,0 @@
-= uic.loadUiType("ui\\Lv1_Warning.ui")[0] 
