@@ -5,7 +5,8 @@ import subprocess
 
 #region Streaming Client
 # 스트리밍 URL 설정
-def Get_Streaming_URL(url = "http://10.211.173.3:8080/stream/video.mjpeg"):
+def Get_Streaming_URL(default_port = 8080):
+    url = f"http://10.211.173.3:{default_port}/stream/video.mjpeg"
     return url
 
 # 비디오 캡처 객체 생성
@@ -16,7 +17,6 @@ def Get_VideoCapture_Variable(url):
 def Get_Streaming(cap):
     if not cap.isOpened():
         print("Error: Unable to open stream")
-        exit()
         return
     # 비디오 스트리밍 재생
     while True:
