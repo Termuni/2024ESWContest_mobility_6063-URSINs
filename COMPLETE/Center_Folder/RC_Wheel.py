@@ -5,6 +5,7 @@ import threading
 from pygame.locals import *
 
 
+
 class Racing_Wheel:
     '''
     해당 코드는 파이게임(pygame) 이라는 라이브러리를 응용하여 조이스틱 값을 받고 사용합니다.
@@ -39,28 +40,27 @@ class Racing_Wheel:
         return self.joysticks
     
     def Update_Input_Value(self):
+        counter = 0
+        #time.sleep(0.35)
+        
         for event in pygame.event.get():
+            
+            #if(counter > 20):
+             #   break
+            #counter+=1
+            
             if event.type == pygame.JOYAXISMOTION:
                 if event.axis == 0:
                     self.status = 0
-                    self.wheel_Value[0] = max(750, min(2250, ((50*(event.value* 10)) + 1500)))
+#                    self.wheel_Value[0] = max(1150, min(1850, ((50*(event.value* 10)) + 1500)))
+                    self.wheel_Value[0] = max(1150, min(1850, (1500 - (50*(event.value* 10)))))
                 elif event.axis == 2:
                     self.status = 2
                     self.wheel_Value[1] = max(0, self.wheel_Value[1] - int(event.value *5 +5))
                 elif event.axis == 5:
                     self.status = 5
-                    self.wheel_Value[1] = min(100, self.wheel_Value[1] + int(event.value *5 +5))
-            elif event.type == pygame.JOYBUTTONDOWN:
-                if event.button == 0:
-                    print("Button_Bottom Input")
-                elif event.button == 1:
-                    print("Button_Right Input")
-                elif event.button == 2:
-                    print("Button_Left Input")
-                elif event.button == 3:
-                    print("Button_Up Input")
-                else:
-                    print("Button_else Input")
+                    self.wheel_Value[1] = min(20, self.wheel_Value[1] + int(event.value *5 +5))
+    
     
 def Init_Wheel():
     global Racing_Wheel_Set

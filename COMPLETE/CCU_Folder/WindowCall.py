@@ -3,6 +3,7 @@ import tkinter as tk
 from tkinter import messagebox
 
 global lv1_activate, debug_mode_en, d_ppg_lv, d_ecg_lv, d_cam_lv, d_pedal_err, d_warning_score
+global w_ppg_lv, w_ecg_lv, w_cam_lv, w_pedal_err, w_warning_score
 lv1_activate = False
 debug_mode_en = False
 d_ppg_lv = 0  # PPG_LV 디폴트 값
@@ -10,7 +11,7 @@ d_ecg_lv = 0  # ECG_LV 디폴트 값
 d_cam_lv = 0  # CAM_LV 디폴트 값
 d_warning_score = 0  # Warning Score 디폴트 값
 
-# 첫 번째 UI 창
+# 디버그 UI 창
 def Create_Debug_Window():
     global debug_mode_en, d_ppg_lv, d_ecg_lv, d_cam_lv, d_pedal_err, d_warning_score
     debug_Window = tk.Tk()
@@ -18,8 +19,10 @@ def Create_Debug_Window():
     
     # Debug 모드 변수
     debug_mode = tk.StringVar(value="Debug_Mode_Disabled")
+    debug_mode_en = False
 
     def Toggle_Debug_Mode():
+        global debug_mode_en
         debug_mode_en = not debug_mode_en
         if debug_mode.get() == "Debug_Mode_Disabled":
             debug_mode.set("Debug_Mode_Enabled")
@@ -72,10 +75,56 @@ def Create_Debug_Window():
 
     debug_Window.mainloop()
 
-# 두 번째 UI 창
+def Create_Watch_Window():
+    global w_ppg_lv, w_ecg_lv, w_cam_lv, w_pedal_err, w_warning_score
+    
+    w_ppg_lv = 0
+    w_ecg_lv = 0
+    w_cam_lv = 0
+    w_pedal_err = False
+    w_warning_score = 0
+    
+    watch_Window = tk.Tk()
+    watch_Window.title("Watcher UI")
+    
+    # PPG_LV, ECG_LV, CAM_LV의 값 확인
+    ppg_lv_var = tk.StringVar(value=str(w_ppg_lv))
+    ecg_lv_var = tk.StringVar(value=str(w_ecg_lv))
+    cam_lv_var = tk.StringVar(value=str(w_cam_lv))
+    pedal_err_var = tk.StringVar(value=str(w_pedal_err))
+    warning_score_var = tk.StringVar(value=str(w_warning_score))
+
+    # BPM (PPG_LV, ECG_LV)
+    tk.Label(watch_Window, text="BPM").grid(row=0, column=0)
+    tk.Label(watch_Window, text="PPG_LV").grid(row=1, column=0)
+    ppg_lv = tk.Entry(watch_Window, textvariable=ppg_lv_var)
+    ppg_lv.grid(row=1, column=1)
+    tk.Label(watch_Window, text="ECG_LV").grid(row=2, column=0)
+    ecg_lv = tk.Entry(watch_Window, textvariable=ecg_lv_var)
+    ecg_lv.grid(row=2, column=1)
+    
+    # CAM (CAM_LV)
+    tk.Label(watch_Window, text="CAM").grid(row=3, column=0)
+    tk.Label(watch_Window, text="CAM_LV").grid(row=4, column=0)
+    cam_lv = tk.Entry(watch_Window, textvariable=cam_lv_var)
+    cam_lv.grid(row=4, column=1)
+    
+    # UDAS (Pedal Err 체크박스)
+    tk.Label(watch_Window, text="Pedal ERR").grid(row=5, column=0)
+    pedal_err = tk.Entry(watch_Window, textvariable=pedal_err_var)
+    pedal_err.grid(row=4, column=1)
+
+    # Warning Score 설정
+    tk.Label(watch_Window, text="Warning Score").grid(row=7, column=0)
+    warning_score = tk.Entry(watch_Window, textvariable=warning_score_var)
+    warning_score.grid(row=7, column=1)
+    
+    watch_Window.mainloop()
+
+# 위험Lv1 UI 창
 def Create_Warning_Lv1_Window():
     window2 = tk.Tk()
-    window2.title("Second UI")
+    window2.title("WANING UI")
 
     def On_Button_Click():
         Set_Debug_Lv1_Flag_Deactive()
@@ -98,6 +147,12 @@ def Show_Window(level):
             args=()
         )
         thread_debug.start()
+    elif level == 'Watch':
+        thread_watch = threading.Thread(
+            target=Create_Watch_Window,
+            args=()
+        )
+        thread_watch.start()
     elif level == 'Lv1':
         Set_Debug_Lv1_Flag_Active()
         thread_lv1 = threading.Thread(
@@ -105,8 +160,9 @@ def Show_Window(level):
             args=()
         )
         thread_lv1.start()
+        
 
-# Show_Window('Debug')
+# Show_Window('Watch')
 
 # 플래그 및 값 GET/SET 함수들
 #region API Set
@@ -136,27 +192,31 @@ def Get_Debug_Mode():
 
 def Get_Debug_PPG_Lv():
     global d_ppg_lv
-    return d_ppg_lv
+    if d_ppg_lv.isdecimal():
+        return int(d_ppg_lv)
 
 def Get_Debug_ECG_Lv():
     global d_ecg_lv
-    return d_ecg_lv
+    if d_ecg_lv.isdecimal():
+        return int(d_ecg_lv)
 
 def Get_Debug_CAM_Lv():
     global d_cam_lv
-    return d_cam_lv
+    if d_cam_lv.isdecimal():
+        return int(d_cam_lv)
 
 def Get_Debug_Pedal_Err():
     global d_pedal_err
-    return d_pedal_err
+    if d_pedal_err.isdecimal():
+        return int(d_pedal_err)
 
 def Get_Debug_Warning_Score():
     global d_warning_score
-    return d_warning_score
+    if d_warning_score.isdecimal():
+        return int(d_warning_score)
 
 def Get_Debug_All():
-    global d_ppg_lv, d_ecg_lv, d_cam_lv, d_pedal_err, d_warning_score
-    return d_ppg_lv, d_ecg_lv, d_cam_lv, d_pedal_err, d_warning_score
+    return Get_Debug_PPG_Lv(), Get_Debug_ECG_Lv(), Get_Debug_CAM_Lv(), Get_Debug_Pedal_Err(), Get_Debug_Warning_Score()
 
 #endregion GET_DEBUG
 
@@ -193,4 +253,19 @@ def Set_Debug_ALL(ppg_lv, ecg_lv, cam_lv, pedal_err, warning_score):
 
 #endregion DEBUG
 
+#region WATCH
+
+def Set_Watch_Values(ppg_lv, ecg_lv, cam_lv, pedal_err, warning_score):
+    global w_ppg_lv, w_ecg_lv, w_cam_lv, w_pedal_err, w_warning_score
+    w_ppg_lv = ppg_lv
+    w_ecg_lv = ecg_lv
+    w_cam_lv = cam_lv
+    w_pedal_err = pedal_err
+    w_warning_score = warning_score
+
+#endregion WATCH
+
 #endregion API Set
+
+
+

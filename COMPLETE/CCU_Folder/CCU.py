@@ -55,6 +55,7 @@ def Init_CCU():
     
     # 4. Init Monitor
     wind.Show_Window('Debug')
+    wind.Show_Window('Watch')
     print("4:COMPLETED")
     
     # 5. Init Communication
@@ -93,6 +94,7 @@ if __name__ == "__main__":
         print("START PROCESSING")
         
         while True:
+            print("========================================")
             # ================ . Debug Mode Set ================
             debug_mode = wind.Get_Debug_Mode()
             
@@ -110,18 +112,27 @@ if __name__ == "__main__":
                     ppg_lv = 0
                     ecg_lv = 0
                     cam_lv = 0
-                else:
+                elif ((dmu_datas[0].isdecimal()) and (dmu_datas[1].isdecimal())) and (dmu_datas[2].isdecimal()):
                     ppg_lv = int(dmu_datas[0])
                     ecg_lv = int(dmu_datas[1])
                     cam_lv = int(dmu_datas[2])
                 pedal_error = udas.Check_Pedal_Error()
-            #Calculate By Datas
+                
+            #Calculate By Datas AND Update Data
             warning_score = warn.Calculate_Warning_Score(
                     ppg_lv, ecg_lv, cam_lv, pedal_error, warning_score)
-                
+            
+            wind.Set_Watch_Values(ppg_lv, ecg_lv, cam_lv, pedal_error, warning_score)
+            
+            udas.Update_Racing_Wheel()
+            
     #region ==================== . Warning LV (In Progress)====================
+            if warning_score < 0:
+                remote_Mode = False
+                warning_score = 0
+                
             #If Warning LV 0                 
-            if 25 >= warning_score >= 0:
+            elif 25 >= warning_score >= 0:
                 remote_Mode = False
                 data_to_TCU = '0'
                 
@@ -133,6 +144,7 @@ if __name__ == "__main__":
                     #LCD Alarm
                     hasWarned = True
                     wind.Show_Window('Lv1')
+                    wind.Set_Debug_Lv1_Flag_Active()
                 else:
                     if (hasWarned) and (wind.Get_Lv1_Flag()):
                         warning_score = warning_score + 0.01
@@ -149,12 +161,16 @@ if __name__ == "__main__":
                 #LED ON
             
             #Elif Warning LV 3                  
-            elif warning_score >= 75:
+            elif 100 >= warning_score >= 75:
                 #Remote On
                 remote_Mode = True
                 data_to_TCU = '3'
                 print("WARNING LV 3")
                 #External ALARM
+                
+            elif warning_score > 100:
+                warning_score = 100
+                
             
             # ---------------- .2 Send And Receive Warning Lv ----------------
             #Send Warning LV to TCU
@@ -181,21 +197,30 @@ if __name__ == "__main__":
             
             # ================ . ACPE ================
             #If There Is Nothing Blocking Front
+            if pedal_error:
+                udas.Set_RC_Car_DcMotor_Power(0)
+                udas.Update_RC_Car_Duty_Cycle()
+                time.sleep(2)
+            
             if not pedal_error:
                 #Sending Motor and Submotor Value
                 udas.Set_RC_Car_Servo_Pos(wheel_Value[0])
                 udas.Set_RC_Car_DcMotor_Power(wheel_Value[1])
                 udas.Update_RC_Car_Duty_Cycle()
-
+         
+			
+            time.sleep(0.2)
             
-    except:
+    except KeyboardInterrupt:
         print("END")
+        GPIO.cleanup()
+        
         
     finally:
         wcom.Close_UART(cTt_Ser)
         wcom.Close_UART(dTc_Ser)
         udas.RC_Car_Set.Stop_MOTOR()
-        
+        #GPIO.cleanup()
         print("CLEAN")
 
 #====================Main(END)==================

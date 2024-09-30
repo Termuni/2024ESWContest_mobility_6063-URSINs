@@ -10,7 +10,7 @@ import Streaming as strm
 def Init_Rmt_Center():
     global server_Socket, data_to_TCU, data_from_TCU
     global wheel_value, warning_LV
-    global streaming_url, vd_cap
+    global streaming_url_lv2, vd_cap_lv2, streaming_url_lv3, vd_cap_lv3
     
     # . Init Communication
     server_Socket = wlcom.Init_Server_Socket()
@@ -22,8 +22,10 @@ def Init_Rmt_Center():
     wheel.Init_Get_Wheel_Value()
     
     # . Init Streaming
-    streaming_url = strm.Get_Streaming_URL()
-    vd_cap = strm.Get_VideoCapture_Variable(streaming_url)
+    streaming_url_lv2 = strm.Get_Streaming_URL(8080)
+    vd_cap_lv2 = strm.Get_VideoCapture_Variable(streaming_url_lv2)
+    streaming_url_lv3 = strm.Get_Streaming_URL(9090)
+    vd_cap_lv3 = strm.Get_VideoCapture_Variable(streaming_url_lv3)
     
     # . SET extra Datas
     wheel_value = [0, 0]
@@ -49,7 +51,7 @@ try:
         if warning_LV == 2:
             print("WARNING : Driver is danger in now")
             #Show Inside CAM
-            strm.Thread_Streaming(vd_cap)
+            strm.Thread_Streaming(vd_cap_lv2)
         
         
         #If Warning LV 3 Received
@@ -57,6 +59,7 @@ try:
             print("REMOTE CONTROL ACTIVATE")
         
             #Show Front CAM
+            strm.Thread_Streaming(vd_cap_lv3)
         
             #Sending Handle Data
             wheel_value = wheel.Get_Racing_Wheel_Value()
