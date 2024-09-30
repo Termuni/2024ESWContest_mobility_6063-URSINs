@@ -54,8 +54,9 @@ def Init_CCU():
     print("3:COMPLETED")
     
     # 4. Init Monitor
-    wind.Show_Window('Debug')
     wind.Show_Window('Watch')
+    time.sleep(0.3)
+    wind.Show_Window('Debug')
     print("4:COMPLETED")
     
     # 5. Init Communication

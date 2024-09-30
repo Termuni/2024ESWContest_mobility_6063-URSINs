@@ -6,10 +6,11 @@ global lv1_activate, debug_mode_en, d_ppg_lv, d_ecg_lv, d_cam_lv, d_pedal_err, d
 global w_ppg_lv, w_ecg_lv, w_cam_lv, w_pedal_err, w_warning_score
 lv1_activate = False
 debug_mode_en = False
-d_ppg_lv = 0  # PPG_LV 디폴트 값
-d_ecg_lv = 0  # ECG_LV 디폴트 값
-d_cam_lv = 0  # CAM_LV 디폴트 값
-d_warning_score = 0  # Warning Score 디폴트 값
+d_ppg_lv = '0'  # PPG_LV 디폴트 값
+d_ecg_lv = '0'  # ECG_LV 디폴트 값
+d_cam_lv = '0'  # CAM_LV 디폴트 값
+d_pedal_err = False
+d_warning_score = '0'  # Warning Score 디폴트 값
 
 # 디버그 UI 창
 def Create_Debug_Window():
@@ -84,6 +85,7 @@ def Create_Watch_Window():
     w_pedal_err = False
     w_warning_score = 0
     
+    
     watch_Window = tk.Tk()
     watch_Window.title("Watcher UI")
     
@@ -96,28 +98,44 @@ def Create_Watch_Window():
 
     # BPM (PPG_LV, ECG_LV)
     tk.Label(watch_Window, text="BPM").grid(row=0, column=0)
-    tk.Label(watch_Window, text="PPG_LV").grid(row=1, column=0)
-    ppg_lv = tk.Entry(watch_Window, textvariable=ppg_lv_var)
-    ppg_lv.grid(row=1, column=1)
-    tk.Label(watch_Window, text="ECG_LV").grid(row=2, column=0)
-    ecg_lv = tk.Entry(watch_Window, textvariable=ecg_lv_var)
-    ecg_lv.grid(row=2, column=1)
-    
+    tk.Label(watch_Window, text="PCG LV : ").grid(row=1, column=0)
+    tk.Label(watch_Window, textvariable=ppg_lv_var).grid(row=1, column=1)
+    tk.Label(watch_Window, text="ECG LV : ").grid(row=2, column=0)
+    tk.Label(watch_Window, textvariable=ecg_lv_var).grid(row=2, column=1)
+
     # CAM (CAM_LV)
     tk.Label(watch_Window, text="CAM").grid(row=3, column=0)
-    tk.Label(watch_Window, text="CAM_LV").grid(row=4, column=0)
-    cam_lv = tk.Entry(watch_Window, textvariable=cam_lv_var)
-    cam_lv.grid(row=4, column=1)
-    
+    tk.Label(watch_Window, text="CAM_LV : ").grid(row=4, column=0)
+    tk.Label(watch_Window, textvariable=cam_lv_var).grid(row=4, column=1)
+        
     # UDAS (Pedal Err 체크박스)
-    tk.Label(watch_Window, text="Pedal ERR").grid(row=5, column=0)
-    pedal_err = tk.Entry(watch_Window, textvariable=pedal_err_var)
-    pedal_err.grid(row=4, column=1)
-
+    tk.Label(watch_Window, text="UDAS").grid(row=5, column=0)
+    tk.Label(watch_Window, text="Pedal ERR : ").grid(row=6, column=0)
+    tk.Label(watch_Window, textvariable=pedal_err_var).grid(row=6, column=1)
+    
     # Warning Score 설정
     tk.Label(watch_Window, text="Warning Score").grid(row=7, column=0)
-    warning_score = tk.Entry(watch_Window, textvariable=warning_score_var)
-    warning_score.grid(row=7, column=1)
+    tk.Label(watch_Window, text="Warning Score : ").grid(row=8, column=0)
+    tk.Label(watch_Window, textvariable=warning_score_var).grid(row=8, column=1)
+    
+    def Update_DATA():
+        # 여기서 local 값 업데이트
+        nonlocal ppg_lv_var, ecg_lv_var, cam_lv_var, pedal_err_var, warning_score_var, watch_Window
+        
+        # print("TEST")
+        # 업데이트된 값을 UI에 반영
+        ppg_lv_var.set(str(w_ppg_lv))
+        ecg_lv_var.set(str(w_ecg_lv))
+        cam_lv_var.set(str(w_cam_lv))
+        pedal_err_var.set(str(w_pedal_err))
+        warning_score_var.set(str(w_warning_score))
+        
+
+        # 1초마다 재귀 호출로 업데이트를 반복 (1000 ms = 1초)
+        watch_Window.after(1000, Update_DATA)
+    
+    # 1초마다 업데이트 시작
+    Update_DATA()
     
     watch_Window.mainloop()
 
@@ -207,8 +225,7 @@ def Get_Debug_CAM_Lv():
 
 def Get_Debug_Pedal_Err():
     global d_pedal_err
-    if d_pedal_err.isdecimal():
-        return int(d_pedal_err)
+    return d_pedal_err
 
 def Get_Debug_Warning_Score():
     global d_warning_score
