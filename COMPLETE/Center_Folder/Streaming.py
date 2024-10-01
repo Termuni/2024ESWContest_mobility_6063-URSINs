@@ -36,7 +36,7 @@ def Thread_Streaming(cap):
         # 쓰레딩으로 두개 센서 데이터 한 번에 수집
         stream_thread = threading.Thread(
             target=Get_Streaming, 
-            args=(cap))
+            args=(cap, ))
 
         # 스레딩 시작
         stream_thread.start()
