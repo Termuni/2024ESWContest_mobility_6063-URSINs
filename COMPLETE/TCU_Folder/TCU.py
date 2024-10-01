@@ -16,7 +16,7 @@ import Streaming as strm
 def Init_TCU():
     #global GPIO
     global client_Socket, cTt_Ser, data_to_CCU, data_from_CCU, HOST, PORT
-    global debug_mode, mode_change_input, wheel_value, warning_LV
+    global remote_Active, debug_mode, mode_change_input, wheel_value, warning_LV
     # 1. SET GPIO
     #GPIO.setmode(GPIO.BCM) #Pin Mode : GPIO
     #GPIO.setmode(GPIO.BOARD)  #Pin Mode : BOARD
@@ -35,6 +35,7 @@ def Init_TCU():
     
     
     # 3. SET extra Datas
+    remote_Active = False
     debug_mode = False
     mode_change_input = False
     warning_LV = 0
@@ -58,17 +59,19 @@ try:
         wlcom.Send_Socket(client_Socket, data_to_Center)
         
         data_from_Center = wlcom.Receive_Socket(client_Socket).decode()
-        center_Wheel_Value = data_from_Center.split(',')
+        center_data = data_from_Center.split(',')
         
         
         if (data_from_CCU != '') and (data_from_CCU.isdecimal()):
             warning_LV = int(data_from_CCU)
         
         
-        if (data_from_Center != '') and (len(center_Wheel_Value) == 2) :
-            if (center_Wheel_Value[0].isdecimal()) and (center_Wheel_Value[1].isdecimal()):
-                wheel_value[0] = center_Wheel_Value[0]
-                wheel_value[1] = center_Wheel_Value[1]
+        if (data_from_Center != '') and (len(center_data) == 3) :
+            if (center_data[0].isdecimal) and (center_data[1].isdecimal()) and (center_data[2].isdecimal()):
+                if int(center_data[0]) == 4:
+                    remote_Active = True
+                wheel_value[0] = center_data[1]
+                wheel_value[1] = center_data[2]
             
         
         
@@ -96,8 +99,10 @@ try:
             #Get Data From Center
             #Streaming Outside CAM
             print("Streaming Outside CAM")
+            
+        if remote_Active:
             #Sending Handling Data to CCU
-            data_to_CCU = f'{wheel_value[0]},{wheel_value[1]}'
+            data_to_CCU = f'{4},{wheel_value[0]},{wheel_value[1]}'
             wcom.Send_Data(cTt_Ser, data_to_CCU)
             
         time.sleep(0.01)

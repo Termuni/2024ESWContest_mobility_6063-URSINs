@@ -129,17 +129,14 @@ if __name__ == "__main__":
             
     #region ==================== . Warning LV (In Progress)====================
             if warning_score < 0:
-                remote_Mode = False
                 warning_score = 0
                 
             #If Warning LV 0                 
             elif 25 >= warning_score >= 0:
-                remote_Mode = False
                 data_to_TCU = '0'
                 
-            #Elif Warning LV 1                  
+            #Elif Warning LV 1
             elif 50 > warning_score >= 25:
-                remote_Mode = False
                 data_to_TCU = '1'
                 if not hasWarned:    
                     #LCD Alarm
@@ -155,7 +152,6 @@ if __name__ == "__main__":
             
             #Elif Warning LV 2  (Sound, LED Needed)
             elif 75 > warning_score >= 50:
-                remote_Mode = False
                 data_to_TCU = '2'
                 print("WARNING LV 2")
                 #Sound Output
@@ -163,23 +159,24 @@ if __name__ == "__main__":
             
             #Elif Warning LV 3                  
             elif 100 >= warning_score >= 75:
-                #Remote On
-                remote_Mode = True
                 data_to_TCU = '3'
                 print("WARNING LV 3")
+                #Sound Output
                 #External ALARM
                 
             elif warning_score > 100:
                 warning_score = 100
                 
-            
             # ---------------- .2 Send And Receive Warning Lv ----------------
             #Send Warning LV to TCU
             wcom.Send_Data(cTt_Ser, data_to_TCU)  # 데이터 전송
             
-            # Receive Score Setup From TCU -> Score Setup 0 or over 100 which set by Center
-            # data_from_TCU = wcom.Receive_Data(cTt_Ser)  # 슬레이브의 응답 수신
-                        
+            #Check Remote Mode
+            if (int(tcu_datas[0]) == 4):
+                remote_Mode = True
+            else:
+                remote_Mode = False
+            
             # ---------------- .3 Set Remote Mode ----------------
             #If Remote OFF
             if not remote_Mode:
@@ -191,8 +188,8 @@ if __name__ == "__main__":
             else:
                 print("Remote Drive")
                 #Get Motor Data from TCU
-                wheel_Value[0] = int(tcu_datas[0])
-                wheel_Value[1] = int(tcu_datas[1])
+                wheel_Value[0] = int(tcu_datas[1])
+                wheel_Value[1] = int(tcu_datas[2])
             
             #endregion Warning LV
             
