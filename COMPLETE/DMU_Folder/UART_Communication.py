@@ -43,7 +43,7 @@ def Receive_Data(ser):
     print(f"{ser} is not Serial!")
     return '0'
 
-
+        
 def Close_UART(ser):
     """
     UART 포트를 닫습니다.

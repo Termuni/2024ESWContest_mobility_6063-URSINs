@@ -180,8 +180,6 @@ def Show_Window(level):
         thread_lv1.start()
         
 
-# Show_Window('Watch')
-
 # 플래그 및 값 GET/SET 함수들
 #region API Set
 
@@ -283,3 +281,7 @@ def Set_Watch_Values(ppg_lv, ecg_lv, cam_lv, pedal_err, warning_score):
 #endregion WATCH
 
 #endregion API Set
+
+
+
+# Show_Window('Lv1')

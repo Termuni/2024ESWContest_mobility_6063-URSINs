@@ -11,6 +11,7 @@ def Init_Server_Socket(HOST = '0.0.0.0', PORT = 9091):
     print('Server listening...')
 
     conn, addr = s.accept()
+    #s.setblocking(False)
     print('Connected by', addr)
     return conn
 

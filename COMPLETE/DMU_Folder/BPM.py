@@ -59,6 +59,7 @@ def Init_BPM():
     
     p_adc = 0
     e_adc = 0
+   
     
     if (isinstance(p_adc, MCP3208) == False):
         print("P_ADC Init")
@@ -69,7 +70,7 @@ def Init_BPM():
         ppg_tot_bpm = 0
         ppg_filtered_bpm = 0
         ppg_count_zero_bpm = 0
-        ppg_bpm_level = 0
+        ppg_bpm_level = 1
         
     if (isinstance(e_adc, MCP3208) == False):
         print("E_ADC Init")
@@ -80,7 +81,7 @@ def Init_BPM():
         ecg_tot_bpm = 0
         ecg_filtered_bpm = 0
         ecg_count_zero_bpm = 0
-        ecg_bpm_level = 0
+        ecg_bpm_level = 1
 
 
 # Getting Value : Peak, BPM
@@ -123,13 +124,14 @@ def Set_Values_After_Monitor_Sensor(sensor_type, peaks, count_bpm, avg_bpm, tot_
 
 def Monitor_Sensor(sensor_type, channel, threshold, min_interval, alpha, calibration_factor):
     # 아날로그값 측정
-
+    
+    
     def Read_N_Process():
         
         value, peaks, count_bpm, avg_bpm, tot_bpm, filtered_bpm, count_zero_bpm, bpm_level = Get_Values_For_Monitor_Sensor(sensor_type, channel)
         voltage = (value * 3.3) / 4096
         current_time = time.time()
-
+        #print("------------------------------------------------------")
         #count_zero_bpm = 0 #zero count goto 0
         #임계값 넘어가면 피크 측정통해 bpm 계산
         if voltage > threshold:
@@ -162,14 +164,21 @@ def Monitor_Sensor(sensor_type, channel, threshold, min_interval, alpha, calibra
             #print(f"{sensor_type} - zero count : {count_zero_bpm} \n")
             if count_zero_bpm >= 100: # if bpm zero count 100 -> level 3
                 bpm_level = 3
-#                if sensor_type == "PPG":
-                    #print(f"ppg bpm level = {ppg_bpm_level}")
-#                elif sensor_type == "ECG":
-                    #print(f"ecg bpm level = {ecg_bpm_level}")
+                """
+                if sensor_type == "PPG":
+                    print(f"ppg bpm level = {ppg_bpm_level}")
+                elif sensor_type == "ECG":
+                    print(f"ecg bpm level = {ecg_bpm_level}")
+                    """
                 #associated with PIG sensor can increase accuracy         
         Set_Values_After_Monitor_Sensor(sensor_type, peaks, count_bpm, avg_bpm, tot_bpm, filtered_bpm, count_zero_bpm, bpm_level)
-        #print(f"{sensor_type} Voltage: {voltage:.2f} V, BPM Level: {bpm_level}")
-    
+        
+        
+        
+        #print(f"{sensor_type} Voltage: {voltage:.2f} V, {sensor_type} BPM Level: {bpm_level}")
+            
+            
+        #print("------------------------------------------------------")
     try:
         while True:
             Read_N_Process()
@@ -191,14 +200,27 @@ def Get_PPG_BPM_Data():
 def Get_ECG_BPM_Data():
     global ecg_bpm_level
     return ecg_bpm_level
+    
+def Get_ECG_Real_BPM_Data():
+    global ecg_filtered_bpm
+    return ecg_filtered_bpm
+
+def Get_PPG_Real_BPM_Data():
+    global ppg_filtered_bpm
+    return ppg_filtered_bpm    
+
 
 #endregion ============================ API Set (TOP) ============================
 
 
 
 def Init_Get_BPM_Data(
-    ppg_ch = 0, ppg_thd = 0.9, ppg_min_intv = 2.0, ppg_A = 0.75, ppg_cal_fact = 240,
-    ecg_ch = 1, ecg_thd = 1.8, ecg_min_intv = 2.0, ecg_A = 0.75, ecg_cal_fact = 240):
+    ppg_ch = 0, ppg_thd = 1.71, ppg_min_intv = 2.0, ppg_A = 0.75, ppg_cal_fact = 240,
+    ecg_ch = 1, ecg_thd = 2.5, ecg_min_intv = 2.0, ecg_A = 0.75, ecg_cal_fact = 240):
+    
+    #ppg_thd = 1.71
+    #ecg_thd = 2.5
+    
     '''
     BPM 데이터를 받아오는 함수입니다
     Init_BPM 함수가 실행되어 있지 않다면, 실행되지 않습니다.
@@ -237,6 +259,7 @@ def Init_Get_BPM_Data(
         ecg_thread.start()
 
         # 두 스레드 끝날대 까지 기다리기
+        
         #ppg_thread.join()
         #ecg_thread.join()
         
@@ -246,7 +269,7 @@ def Init_Get_BPM_Data(
         print("monitoring stopped")
     
 
-    #return ppg_avg_bpm, ecg_avg_bpm
+    return ppg_avg_bpm, ecg_avg_bpm
     
 def main():
     Init_BPM()
@@ -255,4 +278,4 @@ def main():
     
 #if __name__ == '__main__':
     
-#   main()
+    #main()

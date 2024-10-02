@@ -44,28 +44,26 @@ class Racing_Wheel:
         return self.joysticks
     
     def Update_Input_Value(self):
+        counter = 0
+        #time.sleep(0.35)
+        
         for event in pygame.event.get():
+            
+            #if(counter > 20):
+             #   break
+            #counter+=1
+            
             if event.type == pygame.JOYAXISMOTION:
                 if event.axis == 0:
                     self.status = 0
-                    self.wheel_Value[0] = max(750, min(2250, ((50*(event.value* 10)) + 1500)))
+#                    self.wheel_Value[0] = max(1150, min(1850, ((50*(event.value* 10)) + 1500)))
+                    self.wheel_Value[0] = max(1150, min(1850, (1500 - (50*(event.value* 10)))))
                 elif event.axis == 2:
                     self.status = 2
                     self.wheel_Value[1] = max(0, self.wheel_Value[1] - int(event.value *5 +5))
                 elif event.axis == 5:
                     self.status = 5
-                    self.wheel_Value[1] = min(100, self.wheel_Value[1] + int(event.value *5 +5))
-            elif event.type == pygame.JOYBUTTONDOWN:
-                if event.button == 0:
-                    print("Button_Bottom Input")
-                elif event.button == 1:
-                    print("Button_Right Input")
-                elif event.button == 2:
-                    print("Button_Left Input")
-                elif event.button == 3:
-                    print("Button_Up Input")
-                else:
-                    print("Button_else Input")
+                    self.wheel_Value[1] = min(20, self.wheel_Value[1] + int(event.value *5 +5))
     
 class RC_Car_Control:
     '''
@@ -84,7 +82,7 @@ class RC_Car_Control:
         self.dc_pwm = dc_pwm
         self.dcMotor_Power = DcMotor_Power
         self.servo_Degree = Servo_Degree
-        self.Setup_Servo_Motor()
+        #self.Setup_Servo_Motor()
         self.Setup_DC_Motor()
         self.verbose = verbose
         
@@ -116,16 +114,6 @@ class RC_Car_Control:
         self.GPIOPIN_MOTOR_A1_PWM.ChangeDutyCycle(self.dcMotor_Power)
         print(f"dcMotor_Power = {self.dcMotor_Power}")
         
-    #===============[Setup_Servo Motor]====================
-    def Setup_Servo_Motor(self, SERVO_PWM_HZ = 50, GPIOPIN_SERVO = 17):
-        '''
-        이 함수는 기본적으로 PWM_Hz, SERVO의 PIN값이 설정되어있습니다.
-        PWM_Hz = 50 / GPIOPIN_SERVO = 17  :  서보핀을 PWM 모드 50Hz로 사용하기 (50Hz > 20ms), 서보모터 핀
-        PWM_Hz 값만 설정하려면 인자 하나만 입력하시면 됩니다.
-        '''
-        GPIO.setup(GPIOPIN_SERVO, GPIO.OUT)  # 서보핀 출력으로 설정
-        self.servo = GPIO.PWM(GPIOPIN_SERVO, SERVO_PWM_HZ)  
-        #self.servo.start(0)  # 서보 PWM 시작 duty = 0, duty가 0이면 서보는 동작하지 않는다.
 
     #===============[Setup_Servo POS]====================
     def Set_Servo_Pos(self, Servo_degree):
@@ -145,7 +133,7 @@ class UDAS:
     클래스 호출 시 DANGER_DISTANCE를 설정합니다.
     초음파의 Trigger PIN = 5 / Echo PIN = 6 로 세팅되어 있습니다.
     '''
-    def __init__(self, GPIOPIN_TRIG = 5, GPIOPIN_ECHO = 6, DANGER_DISTANCE = 30, verbose = False, distance = 0):
+    def __init__(self, GPIOPIN_TRIG = 21, GPIOPIN_ECHO = 20, DANGER_DISTANCE = 30, verbose = False, distance = None):
         self.GPIOPIN_TRIG = GPIOPIN_TRIG
         self.GPIOPIN_ECHO = GPIOPIN_ECHO
         self.DANGER_DISTANCE = DANGER_DISTANCE
@@ -162,8 +150,9 @@ class UDAS:
         '''
         1회 거리를 측정하는 함수, delay가 0.02
         '''
+
         GPIO.output(self.GPIOPIN_TRIG, True)
-        time.sleep(0.01)
+        time.sleep(0.02)
         GPIO.output(self.GPIOPIN_TRIG, False)
 
         pulse_start = time.time()
@@ -177,8 +166,8 @@ class UDAS:
         pulse_duration = pulse_end - pulse_start
         distance = pulse_duration * 17150
 
-        if distance <= -500 or distance >= 500:
-            return None
+        #if distance <= -500 or distance >= 500:
+            #return None
 
         return distance
 
@@ -191,7 +180,7 @@ class UDAS:
             distance = self.Measure_Distance()
             if distance is not None:
                 distances.append(distance)
-            time.sleep(0.01)
+            time.sleep(0.05)
 
         if len(distances) > 0:
             if self.verbose == True:
@@ -214,6 +203,7 @@ def Init_UDAS():
 def Threading_UltraSonic():
     global UDAS_Set
     try:
+        print("UltraSonic Start")
         while True:
             UDAS_Set.Update_Stable_Distance()
     except KeyboardInterrupt:
@@ -222,6 +212,7 @@ def Threading_UltraSonic():
 def Threading_RacingWheel():
     global Racing_Wheel_Set
     try:
+        print("RacingWheel Start")
         while True:
             Racing_Wheel_Set.Update_Input_Value()
     except KeyboardInterrupt:
@@ -240,6 +231,10 @@ def Get_Racing_Wheel_Status():
 def Get_Racing_Wheel_Value():
     global Racing_Wheel_Set
     return Racing_Wheel_Set.wheel_Value
+    
+def Update_Racing_Wheel():
+	global Racing_Wheel_Set
+	Racing_Wheel_Set.Update_Input_Value()
 
 # . RC Car
 def Get_RC_Car_DcMotor_Power():
@@ -266,6 +261,10 @@ def Get_Stable_Distance():
 def Get_DANGER_DISTANCE():
     global UDAS_Set
     return UDAS_Set.DANGER_DISTANCE
+    
+def Thread_Function_UDAS():
+	global UDAS_Set
+	UDAS_Set.Update_Stable_Distance()
 
 #endregion ============================ API Set (BOTTOM) ============================
 
@@ -278,11 +277,14 @@ def Check_Pedal_Error():
         return False
 
     #if distance < Get_DANGER_DISTANCE() and Get_Racing_Wheel_Status() == 5:
-    if distance < 10 and Get_Racing_Wheel_Status() == 5:
+    #if distance < 10 and Get_Racing_Wheel_Status() == 5:
+    if distance < 25:
         print("페달 오조작 감지. 가속 제한.")
-        if Get_RC_Car_DcMotor_Power() > 1:
-            Set_RC_Car_DcMotor_Power(1)
-            return True
+        return True
+        #if Get_RC_Car_DcMotor_Power() > 1:
+            #Set_RC_Car_DcMotor_Power(1)
+            #RC_Car_Set.Stop_MOTOR()
+            #return True
         
     else:
         #print("정상적인 조작 감지중")
@@ -298,7 +300,7 @@ def Init_Get_UltraSonic_Distance():
     
     Returns : Mean Distance Values
     '''
-    global UDAS_Set, Racing_Wheel_Set
+    global UDAS_Set
     if (isinstance(UDAS_Set, UDAS) == False):
         Init_UDAS()
         return
@@ -308,12 +310,25 @@ def Init_Get_UltraSonic_Distance():
             target=Threading_UltraSonic, 
             args=()
         )
-        racing_wheel_thread = threading.Thread(
-            target=Threading_RacingWheel,
-            args=()
-        )
         # 스레딩 시작
         udas_thread.start()
+        
+        #스레드 끝날대 까지 기다리기
+#        udas_thread.join()
+#        racing_wheel_thread.join()
+        
+    except KeyboardInterrupt:
+        print("monitoring stopped")
+
+def Init_Get_Racing_Wheel():
+    global Racing_Wheel_Set
+    
+    try:
+        # 쓰레딩으로 데이터 한 번에 수집 
+        racing_wheel_thread = threading.Thread(
+            target=Threading_RacingWheel,
+            args=())
+        # 스레딩 시작
         racing_wheel_thread.start()
 
         #스레드 끝날대 까지 기다리기
@@ -322,4 +337,10 @@ def Init_Get_UltraSonic_Distance():
         
     except KeyboardInterrupt:
         print("monitoring stopped")
-    
+
+
+#Init_UDAS()
+#Init_Get_UltraSonic_Distance()
+#while True:
+#	print(f"SD: {Get_Stable_Distance()}")
+#	time.sleep(0.25)
