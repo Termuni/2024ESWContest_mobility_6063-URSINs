@@ -1,6 +1,7 @@
 #import
 import sys, os
-#import RPi.GPIO as GPIO #RPi.GPIO 라이브러리를 GPIO로 사용
+#import RPi.GPIO as GPIO 
+import serial
 import time
 import numpy as np
 import sys
@@ -9,7 +10,7 @@ import sys
 #==================CUSTOM IMPORT==================
 import TCP_IP_Communication as wlcom
 import UART_Communication as wcom
-import Streaming as strm
+#import Streaming as strm
 #==================CUSTOM IMPORT==================
 
 #Init
@@ -22,8 +23,8 @@ def Init_TCU():
     #GPIO.setmode(GPIO.BOARD)  #Pin Mode : BOARD
        
     # 2. Init Communication
-    HOST = '10.211.173.2'  # 서버 VPN IP
-    PORT = 9091  # 서버와 동일한 포트 사용
+    HOST = '10.211.173.2'  # server VPN IP
+    PORT = 9091  #
     client_Socket = wlcom.Init_Client_Socket(HOST, PORT)
     cTt_Ser = wcom.Init_UART(port="/dev/serial0") #CCU ~ TCU Serial
     data_to_CCU = "0,0"
@@ -31,8 +32,7 @@ def Init_TCU():
     print("COMPLETE COM")
     
     # . Init Streaming
-    strm.Setup_Camera()
-    
+    #strm.Setup_Camera()
     
     # 3. SET extra Datas
     remote_Active = False
@@ -52,6 +52,7 @@ try:
     while True:
         
         data_from_CCU = wcom.Receive_Data(cTt_Ser)
+        cTt_Ser.reset_input_buffer()
         time.sleep(0.01)
         
         
@@ -61,13 +62,12 @@ try:
         data_from_Center = wlcom.Receive_Socket(client_Socket).decode()
         center_data = data_from_Center.split(',')
         
-        
         if (data_from_CCU != '') and (data_from_CCU.isdecimal()):
             warning_LV = int(data_from_CCU)
         
         
         if (data_from_Center != '') and (len(center_data) == 3) :
-            if (center_data[0].isdecimal) and (center_data[1].isdecimal()) and (center_data[2].isdecimal()):
+            if ((center_data[0].isdecimal) and (center_data[1].isdecimal())) and (center_data[2].isdecimal()):
                 if int(center_data[0]) == 4:
                     remote_Active = True
                 wheel_value[0] = center_data[1]
@@ -92,7 +92,7 @@ try:
         if warning_LV == 2:
             #Streaming Inside CAM
             print("Streaming Inside CAM")
-            strm.Start_UV4L_Service()
+            #strm.Start_UV4L_Service()
         
         #If Warning Lv 3
         elif warning_LV == 3:
@@ -101,16 +101,15 @@ try:
             print("Streaming Outside CAM")
             
         if remote_Active:
-            #Sending Handling Data to CCU
             data_to_CCU = f'{4},{wheel_value[0]},{wheel_value[1]}'
             wcom.Send_Data(cTt_Ser, data_to_CCU)
             
-        time.sleep(0.01)
+        time.sleep(0.05)
         
-except:#Exception as e:
-    #print("Error! :",e)
+except Exception as e:
+    print("Error! :",e)
     wlcom.Close_Socket(client_Socket)
-    strm.Stop_UV4L_Service()
+    #strm.Stop_UV4L_Service()
     print("END")
     
 finally:

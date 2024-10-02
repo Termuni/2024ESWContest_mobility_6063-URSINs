@@ -3,10 +3,6 @@ import threading
 import os
 import subprocess
 
-
-
-
-
 #region Streaming Client
 # 스트리밍 URL 설정
 def Get_Streaming_URL(default_port = 8080):
@@ -52,10 +48,6 @@ def Thread_Streaming(cap):
 test_url = Get_Streaming_URL()
 test_cap = Get_VideoCapture_Variable(test_url)
 Thread_Streaming(test_cap)
-
-
-
-
 
 #endregion Streaming Client
 

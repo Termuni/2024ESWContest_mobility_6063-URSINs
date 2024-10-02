@@ -8,6 +8,7 @@ def Init_Server_Socket(HOST = '0.0.0.0', PORT = 9091):
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     s.bind((HOST, PORT))
     s.listen(1)
+    s.setblocking(False)
     print('Server listening...')
 
     conn, addr = s.accept()
@@ -22,7 +23,7 @@ def Init_Client_Socket(HOST = '0.0.0.0', PORT = 9091):
     '''
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     s.connect((HOST, PORT))
-    
+    #s.setblocking(False)
     return s
 
 def Receive_Socket(conn):

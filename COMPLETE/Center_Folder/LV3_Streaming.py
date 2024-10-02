@@ -2,7 +2,7 @@ import cv2
 import threading
 import os
 import subprocess
-
+import sys
 import cv2
 
 
@@ -48,9 +48,7 @@ def Thread_Streaming(cap):
         cv2.destroyAllWindows()
         
 
-#ppl = Get_Streaming_Pipeline()
-def Run_New_Term():
-    subprocess.Popen(['lxterminal','--command',f'sudo python3 /home/ursintcu/Desktop/Center_Folder/LV3_Streaming.py'])
+streaming_ppl_lv3 = Get_Streaming_Pipeline('10.211.173.3', 9090)
+vd_cap_lv3 = Get_VideoCapture_Variable(streaming_ppl_lv3)
 
-#vid_thread = threading.Thread(target = Run_New_Term, args=())
-#vid_thread.start()
+Get_Streaming(vd_cap_lv3)

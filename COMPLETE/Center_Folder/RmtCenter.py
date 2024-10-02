@@ -1,5 +1,7 @@
 import sys, os
 import time
+import subprocess
+import threading
 
 #==================CUSTOM IMPORT==================
 import TCP_IP_Communication as wlcom
@@ -16,7 +18,7 @@ def Init_Rmt_Center():
     
     # . Init Communication
     server_Socket = wlcom.Init_Server_Socket()
-    data_to_TCU = "Test"
+    data_to_TCU = "0"
     data_from_TCU = None
     
     # . Init Racing_Wheel
@@ -30,10 +32,10 @@ def Init_Rmt_Center():
     is_streaming_lv3 = False
     
     # . Init Streaming
-    streaming_url_lv2 = strm.Get_Streaming_URL(8080)
-    vd_cap_lv2 = strm.Get_VideoCapture_Variable(streaming_url_lv2)
-    streaming_url_lv3 = strm.Get_Streaming_URL(9090)
-    vd_cap_lv3 = strm.Get_VideoCapture_Variable(streaming_url_lv3)
+    streaming_ppl_lv2 = strm.Get_Streaming_Pipeline('10.211.173.3', 5000)
+    vd_cap_lv2 = strm.Get_VideoCapture_Variable(streaming_ppl_lv2)
+    streaming_ppl_lv3 = strm.Get_Streaming_Pipeline('10.211.173.3', 9090)
+    vd_cap_lv3 = strm.Get_VideoCapture_Variable(streaming_ppl_lv3)
     
     # . SET extra Datas
     wheel_value = [0, 0]
@@ -46,14 +48,18 @@ try:
     #INIT VALUES
     Init_Rmt_Center()
     print("ACTIVE PROCESS")
-    
+    #i = 0
     while True:
+        #i+=1
         data_from_TCU = wlcom.Receive_Socket(server_Socket).decode()
-        wlcom.Send_Socket(server_Socket, data_to_TCU)
+        time.sleep(0.01)
+        
         if data_from_TCU != '':
             warning_LV = int(data_from_TCU)
             
         print(f'{data_from_TCU}, {warning_LV}')
+        print(f"Wheel : {wheel_value}")
+        wheel_value = wheel.Get_Racing_Wheel_Value()
         
         #If Warning LV 2 Received
         if warning_LV == 2:
@@ -79,15 +85,22 @@ try:
         if wind.Get_Remote_Drive_State():
             wind.Set_Remote_Drive_Deactivate()
             #Show Front CAM
-            strm.Thread_Streaming(vd_cap_lv3)
+            
+            vid_thread = threading.Thread(target = strm.Run_New_Term, args=())
+            vid_thread.start()
+            
             is_streaming_lv3 = True
         
+            
+            
         if is_streaming_lv3:
             #Sending Handle Data
-            wheel_value = wheel.Get_Racing_Wheel_Value()
-            data_to_TCU = f'{4},{wheel_value[0]},{wheel_value[1]}'
+            data_to_TCU = f'{4},{int(wheel_value[0])},{wheel_value[1]}'
+        print(data_to_TCU)
+        #data_to_TCU = f'{i},{i},{i}'
+        wlcom.Send_Socket(server_Socket, data_to_TCU)
         
-        time.sleep(0.01)
+        time.sleep(0.05)
         
 except KeyboardInterrupt:
     wlcom.Close_Socket(server_Socket)

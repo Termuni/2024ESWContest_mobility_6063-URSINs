@@ -114,8 +114,12 @@ if __name__ == "__main__":
             else:
                 data_from_DMU = wcom.Receive_Data(dTc_Ser) #Data from DMU (only Receive)
                 data_from_TCU = wcom.Receive_Data(cTt_Ser)
+                #print(data_from_TCU)
+                dTc_Ser.reset_input_buffer()
+                cTt_Ser.reset_input_buffer()
                 dmu_datas = data_from_DMU.split(',')
                 tcu_datas = data_from_TCU.split(',')
+                #tcu_datas = [0, 0, 0]
                 if len(dmu_datas) < 3:
                     ppg_lv = 0
                     ecg_lv = 0
@@ -124,15 +128,19 @@ if __name__ == "__main__":
                     ppg_lv = int(dmu_datas[0])
                     ecg_lv = int(dmu_datas[1])
                     cam_lv = int(dmu_datas[2])
+                if len(tcu_datas) < 3:
+                    if remote_Mode:
+                        tcu_datas = [4, wheel_Value[0], wheel_Value[1]]
+                    else:
+                        tcu_datas = [0, wheel_Value[0], wheel_Value[1]]
+                        
                 pedal_error = udas.Check_Pedal_Error()
                 
-            #Calculate By Datas AND Update Data
-            warning_score = warn.Calculate_Warning_Score(
-                    ppg_lv, ecg_lv, cam_lv, pedal_error, warning_score)
+                #Calculate By Datas AND Update Data
+                warning_score = warn.Calculate_Warning_Score(
+                        ppg_lv, ecg_lv, cam_lv, pedal_error, warning_score)
             
             wind.Set_Watch_Values(ppg_lv, ecg_lv, cam_lv, pedal_error, warning_score)
-            
-            udas.Update_Racing_Wheel()
             
     #region ==================== . Warning LV (In Progress)====================
             if warning_score < 0:
@@ -188,6 +196,8 @@ if __name__ == "__main__":
             #Check Remote Mode
             if len(tcu_datas) < 3:
                 remote_Mode = False
+            elif (tcu_datas[0] == ''):
+                remote_Mode = remote_Mode
             elif (int(tcu_datas[0]) == 4):
                 remote_Mode = True
             
@@ -195,6 +205,7 @@ if __name__ == "__main__":
             #If Remote OFF
             if not remote_Mode:
                 print("Manual Drive")
+                udas.Update_Racing_Wheel()
                 #Set Motor Data by CCU
                 wheel_Value = udas.Get_Racing_Wheel_Value()
             

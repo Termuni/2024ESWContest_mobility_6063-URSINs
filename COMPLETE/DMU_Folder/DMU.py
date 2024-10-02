@@ -4,6 +4,15 @@ import time
 import numpy as np
 from scipy.spatial import distance
 
+######################################################################################################################
+import tkinter as tk
+from tkinter import ttk
+import random
+import threading
+######################################################################################################################
+
+
+
 #==================CUSTOM IMPORT==================
 import BPM as bpm
 import UART_Communication as wcom
@@ -16,7 +25,7 @@ mp_drawing = mp.solutions.drawing_utils
 drawing_spec = mp_drawing.DrawingSpec(thickness=1, circle_radius=1)
 
 # 위험도 계산 관련 변수
-SLEEPY_THRESHOLD_EAR = 0.1  # EAR이 이 값 이하일 때 눈이 감겼다고 간주
+SLEEPY_THRESHOLD_EAR = 0.16  # EAR이 이 값 이하일 때 눈이 감겼다고 간주
 MAX_SCORE = 100  # 최대 점수
 SCORE_INCREMENT_RATE = 4  # 눈이 감긴 시간에 따라 점수가 증가하는 비율 (초당 50점)
 SCORE_DECREMENT_RATE = 2  # 눈을 뜰 때 점수가 감소하는 비율 (초당 20점)
@@ -26,8 +35,115 @@ alert_display_duration = 3  # 경고 메시지 표시 시간 (초)
 
 # 얼굴 기울기와 거리 계산에 필요한 상수
 HEAD_TILT_THRESHOLD = 1.5  # 얼굴 기울기 임계값 (라디안 단위)
-SHOULDER_FACE_DISTANCE_THRESHOLD = 0.4  # 어깨와 얼굴 사이의 거리 임계값 (얼굴이 어깨에 가까울 때)
+SHOULDER_FACE_DISTANCE_THRESHOLD = 0.43  # 어깨와 얼굴 사이의 거리 임계값 (얼굴이 어깨에 가까울 때)
 
+global send_flag
+
+
+
+
+#############################################################################################################
+
+# 전역 변수 선언
+ppg_debug = 0
+temp_value = 0  # 임시 값
+ecg_debug = 0
+temp_value_2 = 0
+
+# ppg_debug 값을 업데이트하는 함수
+def update_ppg_debug():
+    global ppg_debug, temp_value
+    # temp_value가 변경되었을 때만 ppg_debug를 업데이트
+    if temp_value != ppg_debug:
+        ppg_debug = temp_value
+        label_ppg.config(text=f"ppg_debug Value: {ppg_debug}")  # UI 레이블 업데이트
+
+# 버튼 클릭 시 임시 변수(temp_value)에 값을 저장하는 함수
+def store_temp_value(value):
+    global temp_value
+    temp_value = value  # 클릭된 버튼에 따라 임시 변수 값 저장
+    label_temp.config(text=f"임시 값: {temp_value}")  # 임시 값 레이블 업데이트
+
+# ecg_debug 값을 업데이트하는 함수
+def update_ecg_debug():
+    global ecg_debug, temp_value_2
+    # temp_value_2 가 변경되었을 때만 ecg_debug를 업데이트
+    if temp_value_2 != ecg_debug:
+        ecg_debug = temp_value_2
+        label_ecg.config(text=f"ecg debug Value: {ecg_debug}")  # UI 레이블 업데이트
+
+# 버튼 클릭 시 임시 변수(temp_value_2)에 값을 저장하는 함수
+def store_temp_value_2(value_2):
+    global temp_value_2
+    temp_value_2 = value_2  # 클릭된 버튼에 따라 임시 변수 값 저장
+    label_temp_2.config(text=f"임시 값: {temp_value_2}")  # 임시 값 레이블 업데이트
+
+
+# 새로운 Tkinter 윈도우 생성
+new_window = tk.Tk()  # 새로운 창을 생성
+new_window.title("디버그 패널")
+new_window.geometry('450x350+500+0')
+
+# 임시 값을 표시할 레이블
+label_temp = tk.Label(new_window, text=f"임시 값: {temp_value}", font=("Helvetica", 16))
+label_temp.pack(pady=10)
+label_temp.place(x=10,y=10)
+
+# ppg_debug 값을 표시할 레이블
+label_ppg = tk.Label(new_window, text=f"ppg_debug 값: {ppg_debug}", font=("Helvetica", 16))
+label_ppg.pack(pady=10)
+label_ppg.place(x=10,y=50)
+
+# 임시 값을 표시할 레이블
+label_temp_2 = tk.Label(new_window, text=f"임시 값: {temp_value_2}", font=("Helvetica", 16))
+label_temp_2.pack(pady=10)
+label_temp_2.place(x=250,y=10)
+
+# ecg_debug 값을 표시할 레이블
+label_ecg = tk.Label(new_window, text=f"ecg_debug 값: {ecg_debug}", font=("Helvetica", 16))
+label_ecg.pack(pady=10)
+label_ecg.place(x=250,y=50)
+
+
+# 버튼을 만드는 함수 (while 문 밖에서 버튼 생성)
+def create_buttons():
+    button1 = tk.Button(new_window, text="LEVEL 1", command=lambda: store_temp_value(1), width=20, height=2)
+    button1.pack(pady=5)
+    button1.place(x=10,y=90)
+    
+    button2 = tk.Button(new_window, text="LEVEL 2", command=lambda: store_temp_value(2), width=20, height=2)
+    button2.pack(pady=5)
+    button2.place(x=10,y=150)
+
+    button3 = tk.Button(new_window, text="LEVEL 3", command=lambda: store_temp_value(3), width=20, height=2)
+    button3.pack(pady=5)
+    button3.place(x=10,y=210)
+    
+    button4 = tk.Button(new_window, text="BASE MODE", command=lambda: store_temp_value(0), width=20, height=2)
+    button4.pack(pady=5)
+    button4.place(x=10,y=270)
+    
+    button5 = tk.Button(new_window, text="LEVEL 1", command=lambda: store_temp_value_2(1), width=20, height=2)
+    button5.pack(pady=5)
+    button5.place(x=250,y=90)
+
+    button6 = tk.Button(new_window, text="LEVEL 2", command=lambda: store_temp_value_2(2), width=20, height=2)
+    button6.pack(pady=5)
+    button6.place(x=250,y=150)
+    
+    button7 = tk.Button(new_window, text="LEVEL 3", command=lambda: store_temp_value_2(3), width=20, height=2)
+    button7.pack(pady=5)
+    button7.place(x=250,y=210)
+    
+    button8 = tk.Button(new_window, text="BASE MODE", command=lambda: store_temp_value_2(0), width=20, height=2)
+    button8.pack(pady=5)
+    button8.place(x=250,y=270)
+
+
+
+
+
+############################################################################################
 #region FUNCTION
 def initialize_camera():
     cap = cv2.VideoCapture(0)
@@ -117,21 +233,21 @@ def draw_landmarks(image, face_landmarks, pose_landmarks):
     
     # 코 끝 좌표 시각화
     nose_tip_coords = (int(nose_tip.x * image.shape[1]), int(nose_tip.y * image.shape[0]))
-    #cv2.circle(image, nose_tip_coords, 5, (0, 255, 0), -1)  # 코 끝은 초록색 원으로 표시
+    cv2.circle(image, nose_tip_coords, 5, (0, 255, 0), -1)  # 코 끝은 초록색 원으로 표시
 
     # 어깨 좌표 시각화
     left_shoulder_coords = (int(left_shoulder.x * image.shape[1]), int(left_shoulder.y * image.shape[0]))
     right_shoulder_coords = (int(right_shoulder.x * image.shape[1]), int(right_shoulder.y * image.shape[0]))
-    #cv2.circle(image, left_shoulder_coords, 5, (255, 0, 0), -1)  # 왼쪽 어깨는 파란색 원으로 표시
-    #cv2.circle(image, right_shoulder_coords, 5, (255, 0, 0), -1)  # 오른쪽 어깨는 파란색 원으로 표시
+    cv2.circle(image, left_shoulder_coords, 5, (255, 0, 0), -1)  # 왼쪽 어깨는 파란색 원으로 표시
+    cv2.circle(image, right_shoulder_coords, 5, (255, 0, 0), -1)  # 오른쪽 어깨는 파란색 원으로 표시
 
     # 어깨 사이에 선 그리기
-    #cv2.line(image, left_shoulder_coords, right_shoulder_coords, (255, 255, 255), 2)  # 어깨 사이에 흰색 선
+    cv2.line(image, left_shoulder_coords, right_shoulder_coords, (255, 255, 255), 2)  # 어깨 사이에 흰색 선
 
     # 얼굴과 왼쪽 어깨를 연결하는 선
-    #cv2.line(image, nose_tip_coords, left_shoulder_coords, (0, 255, 255), 2)  # 노란색 선
+    cv2.line(image, nose_tip_coords, left_shoulder_coords, (0, 255, 255), 2)  # 노란색 선
     # 얼굴과 오른쪽 어깨를 연결하는 선
-    #cv2.line(image, nose_tip_coords, right_shoulder_coords, (0, 255, 255), 2)  # 노란색 선
+    cv2.line(image, nose_tip_coords, right_shoulder_coords, (0, 255, 255), 2)  # 노란색 선
 
 def process_frame(frame, face_mesh, pose, eye_closed_start_time, drowsiness_scores, last_eye_open_time):
     # BGR 이미지를 RGB로 변환
@@ -151,16 +267,16 @@ def process_frame(frame, face_mesh, pose, eye_closed_start_time, drowsiness_scor
         pose_landmarks = pose_results.pose_landmarks
 
         # 얼굴 랜드마크 그리기
-        #mp_drawing.draw_landmarks(
-        #    image, 
-        #    face_landmarks, 
-        #    mp_face_mesh.FACEMESH_TESSELATION,
-        #    landmark_drawing_spec=drawing_spec,
-        #    connection_drawing_spec=drawing_spec
-        #)
+        mp_drawing.draw_landmarks(
+            image, 
+            face_landmarks, 
+            mp_face_mesh.FACEMESH_TESSELATION,
+            landmark_drawing_spec=drawing_spec,
+            connection_drawing_spec=drawing_spec
+        )
 
         # 얼굴과 어깨 좌표를 화면에 표시
-        #draw_landmarks(image, face_landmarks, pose_landmarks)
+        draw_landmarks(image, face_landmarks, pose_landmarks)
 
         # 눈의 랜드마크 좌표 계산 (왼쪽 및 오른쪽 눈)
         left_eye_indices = [362, 385, 387, 263, 373, 380]
@@ -189,13 +305,25 @@ def process_frame(frame, face_mesh, pose, eye_closed_start_time, drowsiness_scor
             face_shoulder_distance, drowsiness_scores['face_shoulder_score']
         )
 
-    # 최종 졸음 점수 = 각 점수의 합
-    total_drowsiness_score = sum(drowsiness_scores.values())
-    
+    # 가중치 설정
+    ear_weight = 0.6
+    head_tilt_weight = 0.4
+    shoulder_weight = 0.4
+
+    # 총 점수 계산
+    total_weighted_score = (
+        ear_weight * drowsiness_scores['ear_score'] +
+        head_tilt_weight * drowsiness_scores['head_tilt_score'] +
+        shoulder_weight * drowsiness_scores['face_shoulder_score']
+    )
+
+    # 점수가 100을 초과하지 않도록 조정
+    total_drowsiness_score = min(total_weighted_score, 100)
+
     return image, drowsiness_scores, total_drowsiness_score, eye_closed_start_time, last_eye_open_time
 
 def display_alert(image, total_drowsiness_score, drowsy_detected, alert_start_time):
-    if total_drowsiness_score >= 150:  # 졸음 점수가 90 이상일 때 경고
+    if total_drowsiness_score >= 80:  # 졸음 점수가 80 이상일 때 경고
         if not drowsy_detected:
             alert_start_time = time.time()
         drowsy_detected = True
@@ -217,27 +345,29 @@ def display_alert(image, total_drowsiness_score, drowsy_detected, alert_start_ti
     return drowsy_detected, alert_start_time
 
 def get_drowsiness_level(total_drowsiness_score):
-    if total_drowsiness_score < 40:
-        return 0  # 레벨 0
-    elif total_drowsiness_score < 80:
+    if total_drowsiness_score < 25:
         return 1  # 레벨 1
-    elif total_drowsiness_score < 120:
+    elif total_drowsiness_score < 50:
         return 2  # 레벨 2
-    else:
+    elif total_drowsiness_score < 75:
         return 3  # 레벨 3
+    else:
+        return 4  # 레벨 4
 #endregion FUNCTION
 
 def main():
     #region INIT
-    #INIT_BPM
-    ppg_lv = 0
-    ecg_lv = 0
+    ppg_lv = 1
+    ecg_lv = 1
+    ppg_bpm = 0
+    ecg_bpm = 0
+    send_flag = 0
     bpm.Init_BPM()
     bpm.Init_Get_BPM_Data()
     
     #INIT_UART
-    dTc_Ser = wcom.Init_UART(port="/dev/serial0") #CCU ~ DMU Serial
-    data_to_CCU = "0,0,0"
+    dTc_Ser = wcom.Init_UART(port="/dev/ttyAMA0") #CCU ~ DMU Serial
+    data_to_CCU = "Hello CCU\n"
     
     #INIT_CAM
     cap = initialize_camera()
@@ -248,6 +378,94 @@ def main():
     drowsy_detected = False
     alert_start_time = 0
     last_eye_open_time = None  # 눈을 뜬 시간을 기록하는 변수
+    
+    
+    
+    
+    ######################################################################################################################
+    #init ui
+    root = tk.Tk()
+    root.title("Data Display")
+    root.geometry('450x500')
+    
+    
+    
+    
+    ppg_lv_label = tk.Label(root, bg = 'gray75',text=f"PPG Level: {ppg_lv}", font=("Arial", 20))
+    ppg_lv_label.pack(pady=10)
+    ppg_lv_label.place(x=10,y=10)
+    
+    ppg_bpm_label = tk.Label(root, text=f"PPG BPM: {ppg_bpm}", font=("Arial", 20))
+    ppg_bpm_label.pack(pady=10)
+    ppg_bpm_label.place(x=10,y=50)
+    
+  
+    
+    
+    ecg_lv_label = tk.Label(root,bg = 'gray75', text=f"ECG Level: {ecg_lv}", font=("Arial", 20))
+    ecg_lv_label.pack(pady=10)
+    ecg_lv_label.place(x=250,y=10)
+
+    ecg_bpm_label = tk.Label(root, text=f"ECG BPM: {ecg_bpm}", font=("Arial", 20))
+    ecg_bpm_label.pack(pady=10)
+    ecg_bpm_label.place(x=250,y=50)
+    
+    
+    drowsiness_level_label = tk.Label(root,bg = 'gray75', text =f"Drowsiness Level : {drowsiness_level}",font=("Arial", 20))
+    drowsiness_level_label.pack(pady=10)
+    drowsiness_level_label.place(x=10,y=100)
+    
+    ear_score_label = tk.Label(root, text = f"EAR Score : {int(drowsiness_scores['ear_score'])}",font=("Arial", 20))
+    ear_score_label.pack(pady=10)
+    ear_score_label.place(x=10,y=140)
+    
+    head_tilt_score_label = tk.Label(root, text =f"Head Tilt Score : {int(drowsiness_scores['head_tilt_score'])}",font=("Arial", 20))
+    head_tilt_score_label.pack(pady=10)
+    head_tilt_score_label.place(x=10,y=180)
+
+    face_shoudler_score_label = tk.Label(root, text =f"Face Shoudler Score : {int(drowsiness_scores['face_shoulder_score'])}",font=("Arial", 20))
+    face_shoudler_score_label.pack(pady=10)
+    face_shoudler_score_label.place(x=10,y=220)
+    
+    total_drowsiness_score_label = tk.Label(root, text =f"Total Drowsiness Score : {int(total_drowsiness_score)}",font=("Arial", 20))
+    total_drowsiness_score_label.pack(pady=10)
+    total_drowsiness_score_label.place(x=10,y=260)
+    
+    
+    
+    
+    sent_message_label = tk.Label(root, bg = 'gray75', text=f"SENT MESSAGE",font=("Arial",20))
+    sent_message_label.pack(pady=10)
+    sent_message_label.place(x=10,y=310)
+    
+    ppg_lv_sent_label = tk.Label(root, text =f"PPG Level : {ppg_lv}",font=("Arial", 20))
+    ppg_lv_sent_label.pack(pady=10)
+    ppg_lv_sent_label.place(x=10,y=350)
+    
+    ecg_lv_sent_label = tk.Label(root, text =f"ECG Level : {ecg_lv}",font=("Arial", 20))
+    ecg_lv_sent_label.pack(pady=10)
+    ecg_lv_sent_label.place(x=10,y=390)
+    
+    drowsiness_lv_sent_label = tk.Label(root, text =f"drowsiness Level : {drowsiness_level}",font=("Arial", 20))
+    drowsiness_lv_sent_label.pack(pady=10)
+    drowsiness_lv_sent_label.place(x=10,y=430)
+
+    
+        
+    create_buttons()
+
+
+    
+    ######################################################################################################################
+    
+    
+    
+    
+    
+    
+    
+    
+    
     #endregion INIT
     
     with mp_face_mesh.FaceMesh(refine_landmarks=True) as face_mesh, mp_pose.Pose() as pose:
@@ -255,7 +473,7 @@ def main():
             ret, frame = cap.read()
             if not ret:
                 break
-
+            
             image, drowsiness_scores, total_drowsiness_score, eye_closed_start_time, last_eye_open_time = process_frame(
                 frame, face_mesh, pose, eye_closed_start_time, drowsiness_scores, last_eye_open_time
             )
@@ -263,12 +481,61 @@ def main():
             drowsy_detected, alert_start_time = display_alert(image, total_drowsiness_score, drowsy_detected, alert_start_time)
 
             # 레벨 계산 및 전송
-            ppg_lv = bpm.Get_PPG_BPM_Data()
-            ecg_lv = bpm.Get_ECG_BPM_Data()
             drowsiness_level = get_drowsiness_level(total_drowsiness_score)
+            
+            
+            if ppg_debug == 0:
+                ppg_lv = bpm.Get_PPG_BPM_Data()
+                ppg_bpm = bpm.Get_PPG_Real_BPM_Data()
+                ppg_bpm = round(ppg_bpm,2)
+            elif ppg_debug == 1:    
+                ppg_lv = 1
+                ppg_bpm = 0
+            elif ppg_debug == 2:
+                ppg_lv = 2
+                ppg_bpm = 0
+            elif ppg_debug == 3:
+                ppg_lv = 3
+                ppg_bpm = 0
+            
+            
+            if ecg_debug == 0:
+                ecg_lv = bpm.Get_ECG_BPM_Data()
+                ecg_bpm = bpm.Get_ECG_Real_BPM_Data()
+                ecg_bpm = round(ecg_bpm,2)
+            elif ecg_debug == 1:    
+                ecg_lv = 1
+                ecg_bpm = 0
+            elif ecg_debug == 2:
+                ecg_lv = 2
+                ecg_bpm = 0
+            elif ecg_debug == 3:
+                ecg_lv = 3
+                ecg_bpm = 0    
+                
+            
+            ######################################################################################################################
+            #ppg_lv = bpm.Get_PPG_BPM_Data()
+            #ecg_lv = bpm.Get_ECG_BPM_Data()
+            #ecg_bpm = bpm.Get_ECG_Real_BPM_Data()
+            #ppg_bpm = bpm.Get_PPG_Real_BPM_Data()
+            #ecg_bpm = round(ecg_bpm,2)
+            #ppg_bpm = round(ppg_bpm,2)
+            ######################################################################################################################
+            #print("ppg bpm : {} ecg_bpm : {}".format(ppg_bpm,ecg_bpm))
             data_to_CCU = f'{ppg_lv},{ecg_lv},{drowsiness_level}'
-            wcom.Send_Data(dTc_Ser, data_to_CCU)
-
+            
+            
+            
+          
+            
+            
+            # send speed  
+            send_flag += 1
+            if send_flag >= 10:
+                wcom.Send_Data(dTc_Ser, data_to_CCU)
+                send_flag = 0
+                
             # 화면에 위험도 점수 및 레벨 표시
             cv2.putText(image, f'Drowsiness Level: {drowsiness_level}', (10, 150), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 2, cv2.LINE_AA)
             cv2.putText(image, f'Drowsiness Score 1 (EAR): {int(drowsiness_scores["ear_score"])}', (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 2, cv2.LINE_AA)
@@ -277,7 +544,36 @@ def main():
             cv2.putText(image, f'Total Drowsiness Score: {int(total_drowsiness_score)}', (10, 120), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 2, cv2.LINE_AA)
 
             # 얼굴 랜드마크 표시된 화면 출력
-            cv2.imshow('Driver Monitoring', image)
+            cv2.namedWindow('Driver Monitoring', cv2.WINDOW_NORMAL)  # 창을 먼저 생성하고 크기 조절 가능하게 설정
+            cv2.resizeWindow('Driver Monitoring', 800, 600)  # 창 크기를 800x600으로 설정 
+            cv2.imshow('Driver Monitoring', image)  # 이미지를 창에 표시
+        
+            ######################################################################################################################
+            # UI를 갱신
+
+            ppg_lv_label.config(text=f"PPG Level: {ppg_lv}")
+            ecg_lv_label.config(text=f"ECG Level: {ecg_lv}")
+            ecg_bpm_label.config(text=f"ECG BPM: {ecg_bpm}")
+            ppg_bpm_label.config(text=f"PPG BPM: {ppg_bpm}")
+            
+            drowsiness_level_label.config(text =f"Drowsiness Level : {drowsiness_level}")
+            ear_score_label.config(text = f"EAR Score : {int(drowsiness_scores['ear_score'])}  Drowsiness Level : {drowsiness_level}")
+            head_tilt_score_label.config(text =f"Head Tilt Score : {int(drowsiness_scores['head_tilt_score'])}")
+            face_shoudler_score_label.config(text =f"Face Shoudler Score : {int(drowsiness_scores['face_shoulder_score'])}")
+            total_drowsiness_score_label.config(text =f"Total Drowsiness Score : {int(total_drowsiness_score)}")
+   
+            sent_message_label.config(text=f"SENT MESSAGE")
+            ppg_lv_sent_label.config(text =f"PPG Level : {ppg_lv}")
+            ecg_lv_sent_label.config(text =f"ECG Level : {ecg_lv}")
+            drowsiness_lv_sent_label.config(text =f"drowsiness Level : {drowsiness_level}")
+                    
+            root.update()  # tkinter 이벤트 처리
+            
+            update_ppg_debug()  # 주기적으로 ppg_debug 값을 업데이트
+            update_ecg_debug()  # 주기적으로 ecg_debug 값을 업데이트 
+            new_window.update()  # Tkinter UI 업데이트
+
+            ######################################################################################################################
 
             if cv2.waitKey(5) & 0xFF == 27:  # ESC 키를 누르면 종료
                 break
@@ -287,4 +583,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
