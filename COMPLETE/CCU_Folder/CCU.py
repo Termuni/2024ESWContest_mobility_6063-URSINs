@@ -23,6 +23,7 @@ import BPM as bpm
 import WindowCall as wind
 import Warning_Score_Calculator as warn
 import UART_Communication as wcom
+import MP3 as mp3
 #==================CUSTOM IMPORT==================
 
 #Set Constant Values
@@ -147,7 +148,7 @@ if __name__ == "__main__":
                 if not has_lv1_Warned:    
                     #LCD Alarm
                     has_lv1_Warned = True
-                    os.system("LV1.mp3")
+                    mp3.Play_MP3("LV1.mp3")
                     wind.Show_Window('Lv1')
                     wind.Set_Debug_Lv1_Flag_Active()
                 else:
@@ -164,7 +165,7 @@ if __name__ == "__main__":
                 if not has_lv2_Warned:
                     #Sound Output
                     has_lv2_Warned = True
-                    os.system("LV2.mp3")
+                    mp3.Play_MP3("LV2.mp3")
                 #LED ON
             
             #Elif Warning LV 3                  
@@ -172,7 +173,8 @@ if __name__ == "__main__":
                 data_to_TCU = '3'
                 print("WARNING LV 3")
                 if not has_remote_Warned:
-                    os.system("Remote_Mode.mp3")
+                    has_remote_Warned = True
+                    mp3.Play_MP3("Remote_Mode.mp3")
                 #Sound Output
                 #External ALARM
                 
