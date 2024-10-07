@@ -2,6 +2,13 @@
 # 시리얼 포트 설정 (라즈베리파이의 UART 포트 /dev/serial0 또는 /dev/ttyUSB0)
 # gps = serial.Serial('/dev/serial0', baudrate=9600, timeout=1)
 
+import threading
+
+
+global latitude, longitude
+
+[latitude, longitude] = [37.5665, 126.9780]
+
 # 지도 파일 경로
 map_file = 'map.html'
 
@@ -26,7 +33,7 @@ def NMEA_To_Dec(degrees_minutes, direction):
 
 
 # GPS에서 위치 정보를 받아 지도에 업데이트하는 함수
-def Get_GPS_Data(gps):
+def Return_GPS_Data(gps):
     while True:
         data = gps.readline().decode('utf-8', errors='replace')
         if data.startswith('$GPRMC'):  # GPRMC 데이터 사용
@@ -38,7 +45,23 @@ def Get_GPS_Data(gps):
                 longitude_direction = gprmc_fields[6]  # E 또는 W
                 
                 # 위도, 경도를 십진수 도로 변환
-                latitude_decimal = NMEA_To_Dec(latitude, latitude_direction)
-                longitude_decimal = NMEA_To_Dec(longitude, longitude_direction)
-                
-                return latitude_decimal, longitude_decimal
+                latitude_dec = NMEA_To_Dec(latitude, latitude_direction)
+                longitude_dec = NMEA_To_Dec(longitude, longitude_direction)
+                return latitude_dec, longitude_dec
+ 
+def Update_GPS_Data(gps):
+    global latitude, longitude
+    try:
+        while True:
+            latitude, longitude = Return_GPS_Data(gps)
+    except KeyboardInterrupt:
+        print("STOP GPS")
+    
+def Threading_GPS(gps):
+    thread_gps = threading.Thread(target= Update_GPS_Data, args=(gps,))
+    thread_gps.start()
+    
+    
+def Get_GPS_Datas():
+    global latitude, longitude
+    return latitude, longitude

@@ -34,8 +34,8 @@ def Init_TCU():
     print("COMPLETE COM")
     
     # . Init GPS
-    gps_Ser = wcom.Init_UART(port="/dev/ttyUSB0") #GPS Serial
-    [latitude, longitude] = [37.5665, 126.9780]
+    gps_Ser = wcom.Init_UART(port="/dev/ttyAMA1") #GPS Serial
+    gps.Threading_GPS(gps_Ser)
     
     # 3. SET extra Datas
     remote_Active = False
@@ -57,7 +57,9 @@ try:
         data_from_CCU = wcom.Receive_Data(cTt_Ser)
         cTt_Ser.reset_input_buffer()
         time.sleep(0.01)
-        latitude, longitude = gps.Get_GPS_Data(gps_Ser)
+        latitude, longitude = gps.Get_GPS_Datas()
+        latitude = int(latitude * 10000)
+        longitude = int(longitude * 10000)
         
         # . Setting Datas To Center
         data_set = dp.Trans_Str_To_Arr(data_from_CCU)
