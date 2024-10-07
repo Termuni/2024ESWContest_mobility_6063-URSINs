@@ -67,6 +67,7 @@ def RMT_Center_Func():
             #i+=1
             data_from_TCU = wlcom.Receive_Socket(server_Socket).decode()
             tcu_datas = dp.Trans_Str_To_Arr(data_from_TCU)
+            print(tcu_datas, data_from_TCU)
             time.sleep(0.01)
             
             warning_LV = tcu_datas[0]
@@ -76,6 +77,8 @@ def RMT_Center_Func():
                 gps.Set_Gps_Lat_Lon(latitude, longitude)
 
             wheel_value = wheel.Get_Racing_Wheel_Value()
+            wheel_value[0] = int(wheel_value[0])
+            wheel_value[1] = int(wheel_value[1])
             
             #If Warning LV 2 Received
             if warning_LV == 2:
@@ -117,7 +120,8 @@ def RMT_Center_Func():
                     data_set = [2]
                 else:
                     data_set = [4]
-                data_set.append(wheel_value)
+                data_set.append(wheel_value[0])
+                data_set.append(wheel_value[1])
                 data_to_TCU = dp.Trans_Arr_To_Str(data_set)
             
             print(data_to_TCU)
@@ -134,11 +138,12 @@ def RMT_Center_Func():
 #====================Main==================
 
 try:
-    Init_Rmt_Center()
+    #Init_Rmt_Center()
     
     rmt_Thread = threading.Thread(target=RMT_Center_Func, args=())
     rmt_Thread.start()
     
     gps.Window_GPS()
 except KeyboardInterrupt:
+    wlcom.Close_Socket(server_Socket)
     print("END")

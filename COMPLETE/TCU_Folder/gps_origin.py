@@ -5,7 +5,7 @@ import time
 import webview
 
 # 시리얼 포트 설정 (라즈베리파이의 UART 포트 /dev/serial0 또는 /dev/ttyUSB0)
-gps = serial.Serial('/dev/serial0', baudrate=9600, timeout=1)
+gps = serial.Serial('/dev/ttyAMA1', baudrate=9600, timeout=1)
 
 # 지도 파일 경로
 map_file = 'map.html'
@@ -60,19 +60,20 @@ def update_map(lat, lon):
 # 좌표가 변화하는 지도와 함께 실행하는 함수
 def main():
     # 초기 지도 생성
-    latitude, longitude = 37.5665, 126.9780  # 서울 시청을 기본값으로 설정
+    latitude, longitude = 37.5767, 126.8978  # 기본값으로 DMC Tower 설정
     update_map(latitude, longitude)
 
     # PyWebView 창 생성
     window = webview.create_window('GPS Map Viewer', 'file://' + os.path.realpath(map_file))
-
+    
     # 지도 갱신 작업을 스케줄링하는 함수 (window 인자를 받음)
     def update_coordinates(window):
         while True:
             latitude, longitude = get_gps_data()  # GPS 데이터를 받아옴
             update_map(latitude, longitude)  # 지도를 갱신
             window.load_url('file://' + os.path.realpath(map_file))
-            time.sleep(1)
+            time.sleep(0.1)
+            print("PHK's while Test")
 
     # PyWebView 이벤트 루프에서 지도 업데이트 실행
     webview.start(update_coordinates, window)

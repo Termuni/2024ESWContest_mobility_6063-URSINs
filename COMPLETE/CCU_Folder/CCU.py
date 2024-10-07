@@ -88,8 +88,8 @@ def Init_CCU():
     
 
 def Debug_INPUT():
-    global ppg_lv, ecg_lv, cam_lv, pedal_error, warning_score
-    ppg_lv, ecg_lv, cam_lv, pedal_error, warning_score = wind.Get_Debug_All()
+    global ppg_lv, ecg_lv, cam_lv, pedal_error, warning_score, warning_lv
+    ppg_lv, ecg_lv, cam_lv, pedal_error, warning_score, warning_lv = wind.Get_Debug_All()
 
 
 #====================Main(START)==================
@@ -136,7 +136,7 @@ if __name__ == "__main__":
                         ppg_lv, ecg_lv, cam_lv, belt_lv, pedal_error, warning_score)
             
             
-            wind.Set_Watch_Values(ppg_lv, ecg_lv, cam_lv, pedal_error, warning_score)
+            wind.Set_Watch_Values(ppg_lv, ecg_lv, cam_lv, pedal_error, warning_score, warning_lv)
             
     #region ==================== . Warning LV (In Progress)====================
             if warning_score < 0:
@@ -205,8 +205,9 @@ if __name__ == "__main__":
             else:
                 print("Remote Drive")
                 #Get Motor Data from TCU
-                wheel_Value[0] = tcu_datas[1]
-                wheel_Value[1] = tcu_datas[2]
+                if len(tcu_datas) == 3:
+                    wheel_Value[0] = tcu_datas[1]
+                    wheel_Value[1] = tcu_datas[2]
             
             #endregion Warning LV
             
