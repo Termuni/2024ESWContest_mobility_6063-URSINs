@@ -10,12 +10,14 @@ from tkinter import ttk
 import random
 import threading
 ######################################################################################################################
-
+import gpiozero
+import time
 
 
 #==================CUSTOM IMPORT==================
 import BPM as bpm
 import UART_Communication as wcom
+import belt_control as belt
 #==================CUSTOM IMPORT==================
 
 # MediaPipe Face Mesh 및 Pose 초기화
@@ -43,6 +45,92 @@ global send_flag
 
 
 #############################################################################################################
+# GPIO 핀 번호 설정 (BCM 기준)
+LED_PIN = 12
+BELT_PUT_PIN = 26  # 스위치가 연결된 핀
+CLK_PIN = 17  # 로터리 엔코더 CLK 핀
+DT_PIN = 18   # 로터리 엔코더 DT 핀
+
+# 글로벌 변수
+Lv_Belt = 0  # Lv_Belt 초기값 0
+count = 0    # 로터리 인코더 카운터
+last_change_time = time.time()  # 마지막 변화 시간
+last_clk_state = None  # 로터리 엔코더 CLK 핀의 마지막 상태
+
+# GPIO 설정
+#led = gpiozero.LED(LED_PIN)
+#belt_put_switch = gpiozero.Button(BELT_PUT_PIN)
+#clk = gpiozero.Button(CLK_PIN)
+#dt = gpiozero.Button(DT_PIN)
+
+# LED를 깜빡이는 함수 (블로킹 방식)
+def blink_led(led):
+    led.on()  # LED ON
+    time.sleep(1)
+    led.off()  # LED OFF
+    time.sleep(1)
+
+# 로터리 인코더 카운트 처리 함수
+def handle_encoder(clk, dt):
+    global Lv_Belt, count, last_clk_state, last_change_time
+
+    current_clk_state = clk.is_pressed
+    dt_state = dt.is_pressed
+
+    if last_clk_state is None:
+        last_clk_state = current_clk_state  # 첫 상태 설정
+
+    if last_clk_state == 0 and current_clk_state == 1:
+        if dt_state == 0:
+            count += 1
+            print(f"Clockwise. Count: {count}")
+        else:
+            count -= 1
+            print(f"Counter-Clockwise. Count: {count}")
+
+        last_change_time = time.time()
+
+        if count >= 20 or count <= -20:
+            Lv_Belt = 2
+            print("Lv_Belt set to 2")
+        elif Lv_Belt == 2 and -10 <= count <= 10:
+            Lv_Belt = 1
+            print("Lv_Belt reset to 1")
+
+    last_clk_state = current_clk_state
+
+# LED 제어 및 로터리 인코더 상태 관리 함수
+def control_lv_belt():
+    global Lv_Belt, count, last_change_time
+
+    if belt_put_switch.is_pressed:
+        Lv_Belt = 0
+        count = 0
+        led.off()  # LED OFF
+    elif not belt_put_switch.is_pressed and Lv_Belt == 0:
+        Lv_Belt = 1
+        print("Lv_Belt set to 1")
+    elif Lv_Belt == 1:
+        led.on()  # LED ON
+        handle_encoder(clk, dt)
+        if time.time() - last_change_time > 5:
+            count = 0
+            print("No change for 5 seconds. Count reset to 0.")
+            last_change_time = time.time()
+    elif Lv_Belt == 2:
+        blink_led(led)  # LED 깜빡임
+        handle_encoder(clk, dt)
+
+    return Lv_Belt  # Lv_Belt 값 반환
+
+##########################################
+
+
+
+
+
+
+
 
 # 전역 변수 선언
 ppg_debug = 0
@@ -357,6 +445,10 @@ def get_drowsiness_level(total_drowsiness_score):
 
 def main():
     #region INIT
+    #RESET GPIO
+    
+    
+    #INIT Datas
     ppg_lv = 1
     ecg_lv = 1
     ppg_bpm = 0
@@ -379,7 +471,10 @@ def main():
     alert_start_time = 0
     last_eye_open_time = None  # 눈을 뜬 시간을 기록하는 변수
     
+    #INIT_BELT
+    belt.Thread_Belt()
     
+    #endregion
     
     
     ######################################################################################################################
@@ -483,6 +578,7 @@ def main():
             # 레벨 계산 및 전송
             drowsiness_level = get_drowsiness_level(total_drowsiness_score)
             
+            belt_lv = belt.Get_Lv_Belt()
             
             if ppg_debug == 0:
                 ppg_lv = bpm.Get_PPG_BPM_Data()
@@ -523,8 +619,9 @@ def main():
             #ppg_bpm = round(ppg_bpm,2)
             ######################################################################################################################
             #print("ppg bpm : {} ecg_bpm : {}".format(ppg_bpm,ecg_bpm))
-            data_to_CCU = f'{ppg_lv},{ecg_lv},{drowsiness_level}'
+            data_to_CCU = f'{ppg_lv},{ecg_lv},{drowsiness_level},{belt_lv}'
             
+            print(data_to_CCU)
             
             
           
@@ -536,6 +633,10 @@ def main():
                 wcom.Send_Data(dTc_Ser, data_to_CCU)
                 send_flag = 0
                 
+                
+                
+            
+            
             # 화면에 위험도 점수 및 레벨 표시
             cv2.putText(image, f'Drowsiness Level: {drowsiness_level}', (10, 150), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 2, cv2.LINE_AA)
             cv2.putText(image, f'Drowsiness Score 1 (EAR): {int(drowsiness_scores["ear_score"])}', (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 2, cv2.LINE_AA)
@@ -577,6 +678,9 @@ def main():
 
             if cv2.waitKey(5) & 0xFF == 27:  # ESC 키를 누르면 종료
                 break
+                
+            time.sleep(0.001)
+                
 
     cap.release()
     cv2.destroyAllWindows()

@@ -19,11 +19,11 @@ import os
 
 #==================CUSTOM IMPORT==================
 import UDAS as udas
-import BPM as bpm
 import WindowCall as wind
 import Warning_Score_Calculator as warn
 import UART_Communication as wcom
 import MP3 as mp3
+import Data_Process as dp
 #==================CUSTOM IMPORT==================
 
 #Set Constant Values
@@ -31,9 +31,9 @@ import MP3 as mp3
 def Init_CCU():
     global GPIO
     global pedal_error
-    global ppg_lv, ecg_lv
+    global ppg_lv, ecg_lv, cam_lv, belt_lv
     global cTt_Ser, dTc_Ser, tcp, data_to_TCU, data_to_DMU, data_from_DMU, data_from_TCU
-    global cam_lv, warning_score
+    global warning_score, warning_lv
     global debug_mode, mode_change_input, has_lv1_Warned, has_lv2_Warned, has_lv3_Warned, has_remote_Warned, remote_Mode, wheel_Value, time_counter
     
     GPIO.cleanup()
@@ -49,11 +49,11 @@ def Init_CCU():
     udas.Init_Get_UltraSonic_Distance()
     print("2:COMPLETED")
     
-    # 3. Init bpm
+    # 3. Init DMU Datas
     ppg_lv = 0
     ecg_lv = 0
-    # bpm.Init_BPM()
-    # bpm.Init_Get_BPM_Data()
+    cam_lv = 0
+    belt_lv = 0
     print("3:COMPLETED")
     
     # 4. Init Monitor
@@ -80,16 +80,16 @@ def Init_CCU():
     has_remote_Warned = False
     remote_Mode = False
     wheel_Value = [0, 0]
-    cam_lv = 0
     warning_score = 0
+    warning_lv = 0
     time_counter = 0
     print("6:COMPLETED")
     
     
 
 def Debug_INPUT():
-    global ppg_lv, ecg_lv, cam_lv, pedal_error, warning_score
-    ppg_lv, ecg_lv, cam_lv, pedal_error, warning_score = wind.Get_Debug_All()
+    global ppg_lv, ecg_lv, cam_lv, pedal_error, warning_score, warning_lv
+    ppg_lv, ecg_lv, cam_lv, pedal_error, warning_score, warning_lv = wind.Get_Debug_All()
 
 
 #====================Main(START)==================
@@ -112,35 +112,31 @@ if __name__ == "__main__":
                 Debug_INPUT()
             #Else Getting Sensor Value
             else:
+                #Get Datas
                 data_from_DMU = wcom.Receive_Data(dTc_Ser) #Data from DMU (only Receive)
                 data_from_TCU = wcom.Receive_Data(cTt_Ser)
-                #print(data_from_TCU)
                 dTc_Ser.reset_input_buffer()
                 cTt_Ser.reset_input_buffer()
-                dmu_datas = data_from_DMU.split(',')
-                tcu_datas = data_from_TCU.split(',')
-                #tcu_datas = [0, 0, 0]
-                if len(dmu_datas) < 3:
-                    ppg_lv = 0
-                    ecg_lv = 0
-                    cam_lv = 0
-                elif ((dmu_datas[0].isdecimal()) and (dmu_datas[1].isdecimal())) and (dmu_datas[2].isdecimal()):
-                    ppg_lv = int(dmu_datas[0])
-                    ecg_lv = int(dmu_datas[1])
-                    cam_lv = int(dmu_datas[2])
-                if len(tcu_datas) < 3:
-                    if remote_Mode:
-                        tcu_datas = [4, wheel_Value[0], wheel_Value[1]]
-                    else:
-                        tcu_datas = [0, wheel_Value[0], wheel_Value[1]]
-                        
+                dmu_datas = dp.Trans_Str_To_Arr(data_from_DMU)
+                tcu_datas = dp.Trans_Str_To_Arr(data_from_TCU)
+                
+                if len(dmu_datas) == 4:
+                    [ppg_lv, ecg_lv, cam_lv, belt_lv] = dmu_datas
+            
+                #Check Remote Mode
+                if tcu_datas[0] == 4:
+                    remote_Mode = True
+                elif tcu_datas[0] == 2:
+                    remote_Mode = False
+                
                 pedal_error = udas.Check_Pedal_Error()
                 
                 #Calculate By Datas AND Update Data
                 warning_score = warn.Calculate_Warning_Score(
-                        ppg_lv, ecg_lv, cam_lv, pedal_error, warning_score)
+                        ppg_lv, ecg_lv, cam_lv, belt_lv, pedal_error, warning_score)
             
-            wind.Set_Watch_Values(ppg_lv, ecg_lv, cam_lv, pedal_error, warning_score)
+            
+            wind.Set_Watch_Values(ppg_lv, ecg_lv, cam_lv, pedal_error, warning_score, warning_lv)
             
     #region ==================== . Warning LV (In Progress)====================
             if warning_score < 0:
@@ -148,11 +144,13 @@ if __name__ == "__main__":
                 
             #If Warning LV 0                 
             elif 25 >= warning_score >= 0:
-                data_to_TCU = '0'
+                warning_lv = 0
+                data_to_TCU = dp.Trans_Arr_To_Str([0])
                 
             #Elif Warning LV 1
             elif 50 > warning_score >= 25:
-                data_to_TCU = '1'
+                data_to_TCU = dp.Trans_Arr_To_Str([1])
+                warning_lv = 1
                 if not has_lv1_Warned:    
                     #LCD Alarm
                     has_lv1_Warned = True
@@ -168,7 +166,8 @@ if __name__ == "__main__":
             
             #Elif Warning LV 2  (Sound, LED Needed)
             elif 75 > warning_score >= 50:
-                data_to_TCU = '2'
+                data_to_TCU = dp.Trans_Arr_To_Str([2])
+                warning_lv = 2
                 print("WARNING LV 2")
                 if not has_lv2_Warned:
                     #Sound Output
@@ -178,7 +177,8 @@ if __name__ == "__main__":
             
             #Elif Warning LV 3                  
             elif 100 >= warning_score >= 75:
-                data_to_TCU = '3'
+                data_to_TCU = dp.Trans_Arr_To_Str([3])
+                warning_lv = 3
                 print("WARNING LV 3")
                 if not has_remote_Warned:
                     has_remote_Warned = True
@@ -193,14 +193,6 @@ if __name__ == "__main__":
             #Send Warning LV to TCU
             wcom.Send_Data(cTt_Ser, data_to_TCU)  # 데이터 전송
             
-            #Check Remote Mode
-            if len(tcu_datas) < 3:
-                remote_Mode = False
-            elif (tcu_datas[0] == ''):
-                remote_Mode = remote_Mode
-            elif (int(tcu_datas[0]) == 4):
-                remote_Mode = True
-            
             # ---------------- .3 Set Remote Mode ----------------
             #If Remote OFF
             if not remote_Mode:
@@ -213,8 +205,9 @@ if __name__ == "__main__":
             else:
                 print("Remote Drive")
                 #Get Motor Data from TCU
-                wheel_Value[0] = int(tcu_datas[1])
-                wheel_Value[1] = int(tcu_datas[2])
+                if len(tcu_datas) == 3:
+                    wheel_Value[0] = tcu_datas[1]
+                    wheel_Value[1] = tcu_datas[2]
             
             #endregion Warning LV
             

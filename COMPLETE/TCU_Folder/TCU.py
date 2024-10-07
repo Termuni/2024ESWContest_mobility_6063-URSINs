@@ -10,7 +10,8 @@ import sys
 #==================CUSTOM IMPORT==================
 import TCP_IP_Communication as wlcom
 import UART_Communication as wcom
-#import Streaming as strm
+import GPS_TCU as gps
+import Data_Process as dp
 #==================CUSTOM IMPORT==================
 
 #Init
@@ -18,6 +19,7 @@ def Init_TCU():
     #global GPIO
     global client_Socket, cTt_Ser, data_to_CCU, data_from_CCU, HOST, PORT
     global remote_Active, debug_mode, mode_change_input, wheel_value, warning_LV
+    global gps_Ser, latitude, longitude
     # 1. SET GPIO
     #GPIO.setmode(GPIO.BCM) #Pin Mode : GPIO
     #GPIO.setmode(GPIO.BOARD)  #Pin Mode : BOARD
@@ -31,8 +33,9 @@ def Init_TCU():
     data_from_CCU = '0'
     print("COMPLETE COM")
     
-    # . Init Streaming
-    #strm.Setup_Camera()
+    # . Init GPS
+    gps_Ser = wcom.Init_UART(port="/dev/ttyAMA1") #GPS Serial
+    gps.Threading_GPS(gps_Ser)
     
     # 3. SET extra Datas
     remote_Active = False
@@ -54,54 +57,37 @@ try:
         data_from_CCU = wcom.Receive_Data(cTt_Ser)
         cTt_Ser.reset_input_buffer()
         time.sleep(0.01)
+        latitude, longitude = gps.Get_GPS_Datas()
+        latitude = int(latitude * 10000)
+        longitude = int(longitude * 10000)
         
-        
-        data_to_Center = data_from_CCU
+        # . Setting Datas To Center
+        data_set = dp.Trans_Str_To_Arr(data_from_CCU)
+        data_set.append(latitude)
+        data_set.append(longitude)
+        data_to_Center = dp.Trans_Arr_To_Str(data_set)
         wlcom.Send_Socket(client_Socket, data_to_Center)
         
+        # . Getting Datas From Center
         data_from_Center = wlcom.Receive_Socket(client_Socket).decode()
-        center_data = data_from_Center.split(',')
         
-        if (data_from_CCU != '') and (data_from_CCU.isdecimal()):
-            warning_LV = int(data_from_CCU)
+        center_datas = dp.Trans_Str_To_Arr(data_from_Center)
+        warning_LV = dp.Trans_Str_To_Arr(data_from_CCU)
         
-        
-        if (data_from_Center != '') and (len(center_data) == 3) :
-            if ((center_data[0].isdecimal) and (center_data[1].isdecimal())) and (center_data[2].isdecimal()):
-                if int(center_data[0]) == 4:
-                    remote_Active = True
-                wheel_value[0] = center_data[1]
-                wheel_value[1] = center_data[2]
-            
-        
-        
-        print(warning_LV, wheel_value)
-        
-        #If Debug Mode
-        if mode_change_input:
-            mode_change_input = not mode_change_input
-            
-            if debug_mode:
-                print("DEBUG MODE ACTIVATE")
-            
-            else:
-                #Else Getting Sensor Value
-                print("DEBUG MODE DEACTIVATE")
-                
-        #If Warning Lv 2
-        if warning_LV == 2:
-            #Streaming Inside CAM
-            print("Streaming Inside CAM")
-            #strm.Start_UV4L_Service()
-        
-        #If Warning Lv 3
-        elif warning_LV == 3:
-            #Get Data From Center
-            #Streaming Outside CAM
-            print("Streaming Outside CAM")
-            
+        if len(center_datas) == 3:
+            if center_datas[0] == 4:
+                remote_Active = True
+            elif center_datas[0] == 2:
+                remote_Active = False
+            wheel_value = [center_datas[1], center_datas[2]]
+
         if remote_Active:
-            data_to_CCU = f'{4},{wheel_value[0]},{wheel_value[1]}'
+            data_set = [4, wheel_value[0], wheel_value[1]]
+            data_to_CCU = dp.Trans_Arr_To_Str(data_set)
+            wcom.Send_Data(cTt_Ser, data_to_CCU)
+        else:
+            data_set = [2, 1500, 0]
+            data_to_CCU = dp.Trans_Arr_To_Str(data_set)
             wcom.Send_Data(cTt_Ser, data_to_CCU)
             
         time.sleep(0.05)
