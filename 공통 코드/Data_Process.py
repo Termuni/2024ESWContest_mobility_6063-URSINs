@@ -30,8 +30,3 @@ def Trans_Str_To_Arr(in_str):
 
 # if __name__ == '__main__':
 #     print(Trans_Str_To_Arr('2,5'))
-
-arr = [1, 2]
-data_set = [arr[0], arr[1]]
-
-print(data_set)
