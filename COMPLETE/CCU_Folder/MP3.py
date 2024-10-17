@@ -1,10 +1,16 @@
 
 import os
-import threading
+import subprocess
 
+mp3_process = None
 
 def Play_MP3(mp3_name):
-    mp3_thread = threading.Thread(target=os.system, args=(f"mpg321 {mp3_name}",))
-    mp3_thread.start()
-    
-Play_MP3("LV1")
+    global mp3_process
+    Stop_MP3()
+    mp3_process = subprocess.Popen(['mpg321', mp3_name])
+        
+def Stop_MP3():
+    global mp3_process
+    if mp3_process is not None:
+        mp3_process.terminate()
+        mp3_process = None
