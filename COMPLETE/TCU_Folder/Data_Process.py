@@ -1,4 +1,4 @@
-def Trans_Arr_To_Str(arr):
+def Trans_Arr_To_Str(arr):   # 데이터 정제 (리스트 -> 문자열)
     if str(type(arr)) == "<class 'int'>":
         return_str = f'{arr}'
         return return_str
@@ -11,13 +11,13 @@ def Trans_Arr_To_Str(arr):
             return_str = return_str + ','
     return return_str
     
-def Trans_Str_To_Arr(in_str):
-    if str(type(in_str)) != "<class 'str'>":
+def Trans_Str_To_Arr(in_str):  # 데이터 정제 (문자열 -> 리스트) 
+    if str(type(in_str)) != "<class 'str'>":                     
         return [0]
-    arr_str = in_str.split(',')
+    arr_str = in_str.split(',')   
     return_list = []
     for i in arr_str:
-        if not i.isdecimal():
+        if not i.isdecimal():                
             return [0]
         return_list.append(int(i))
     return return_list

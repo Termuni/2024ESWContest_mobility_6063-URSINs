@@ -1,0 +1,52 @@
+##==========[ VPN 켜는 법 ]============
+## 콘솔 창에서.
+$ sudo openvpn vpn
+$ 1024    #(비밀번호임)
+
+
+
+
+##==========[ 스트리밍 켜는 법 ]==============
+$ v4l2-ctl --list-devices   
+
+## 콘솔창에서 이 명령어 치면, UVC Camera (046d:0825) ~~~ 있을거임. 
+## 그 아래 /dev/video? 여러개 나올텐데, 가장 위에 써있는거. (ex. /dev/video0)
+## 그게 내부Cam(웹캠) 번호임.
+## 그 번호대로 아래 치면 됨.
+
+## 내부Cam(웹캠) 스트리밍
+$ gst-launch-1.0 v4l2src device=/dev/video0 ! video/x-raw, width=640, height=480, framerate=15/1 ! videoconvert ! jpegenc ! multipartmux ! tcpserversink host=0.0.0.0 port=5000
+
+## 외부Cam(Pi캠) 스트리밍
+$ gst-launch-1.0 libcamerasrc ! video/x-raw, width=640, height=480, framerate=30/1 ! videoconvert ! jpegenc ! multipartmux ! tcpserversink host=0.0.0.0 port=9090
+
+
+
+##==========[ 기타 디버깅/확인 용 명령어 (현규 사용) ]=======================
+
+## Gstreamer 테스트 (스테레오 테스트 화면 나옴)
+$ gst-launch-1.0 videotestsrc ! videoconvert ! autovideosink
+
+
+## 내부Cam(웹캠) 테스트
+$ gst-launch-1.0 v4l2src device=/dev/video0 ! video/x-raw, width=640, height=480, framerate=15/1 ! videoconvert ! autovideosink
+
+## 외부Cam(Pi캠) 테스트
+$ gst-launch-1.0 libcamerasrc ! video/x-raw, width=640, height=480, framerate=15/1 ! videoconvert ! autovideosink
+
+
+## 기타 명령어
+$ lsusb
+$ dmesg | grep video
+$ free -h
+$ $ v4l2-ctl --list-devices
+
+
+## uv4l 스트리밍용 (지금은 안씀)
+$cd /home/pi/Desktop/TCU_241002/TCU_Streaming_240904
+$sudo python3 TCU_Streming_UV4L_240904_1623.py
+
+
+
+
+

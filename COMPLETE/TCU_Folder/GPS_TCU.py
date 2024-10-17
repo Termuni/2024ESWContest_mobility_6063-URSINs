@@ -3,8 +3,6 @@
 # gps = serial.Serial('/dev/serial0', baudrate=9600, timeout=1)
 
 import threading
-
-
 global latitude, longitude
 
 [latitude, longitude] = [37.5665, 126.9780]

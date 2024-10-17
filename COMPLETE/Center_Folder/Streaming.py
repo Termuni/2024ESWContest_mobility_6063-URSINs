@@ -8,8 +8,10 @@ import cv2
 
 #region Streaming Client
 # 스트리밍 URL 설정
-def Get_Streaming_Pipeline(default_ip = '10.211.173.3', default_port = 8080):
-    pipeline = f"tcpclientsrc host={default_ip} port={default_port} ! multipartdemux ! jpegdec ! videoconvert ! appsink sync=false"
+def Get_Streaming_Pipeline(default_ip, default_port):
+    pipeline = f"tcpclientsrc host={default_ip} port={default_port} ! queue max-size-buffers=1 ! multipartdemux ! jpegdec ! videoconvert ! appsink sync=false drop=true max-buffers=1"
+    #pipeline = f"tcpclientsrc host={default_ip} port={default_port} ! queue max_size-buffers=1 ! multipartdemux ! jpegdec ! autovideosink sync=false"
+    
     return pipeline
 
 # 비디오 캡처 객체 생성
@@ -27,8 +29,8 @@ def Get_Streaming(cap):
         if not ret:
             print("Failed to retrieve frame")
             break
-        
-        cv2.imshow('Raspberry Pi Stream', frame)
+        resized_frame = cv2.resize(frame, (640, 480))
+        cv2.imshow('Raspberry Pi Stream', resized_frame)
 
         # 'q'를 누르면 스트리밍 종료
         if cv2.waitKey(1) & 0xFF == ord('q'):
@@ -50,7 +52,7 @@ def Thread_Streaming(cap):
 
 #ppl = Get_Streaming_Pipeline()
 def Run_New_Term():
-    subprocess.Popen(['lxterminal','--command',f'sudo python3 /home/ursintcu/Desktop/Center_Folder/LV3_Streaming.py'])
+    subprocess.Popen(['lxterminal','--command',f'sudo python3 /home/ursintcu/Desktop/LV3_Streaming.py'])
 
 #vid_thread = threading.Thread(target = Run_New_Term, args=())
 #vid_thread.start()
