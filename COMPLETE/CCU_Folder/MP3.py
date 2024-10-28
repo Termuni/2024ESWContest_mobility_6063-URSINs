@@ -3,7 +3,6 @@ import os
 import subprocess
 
 mp3_process = None
-
 def Play_MP3(mp3_name):
     global mp3_process
     Stop_MP3()

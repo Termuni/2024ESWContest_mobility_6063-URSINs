@@ -216,7 +216,7 @@ def Get_PPG_Real_BPM_Data():
 
 def Init_Get_BPM_Data(
     ppg_ch = 0, ppg_thd = 1.71, ppg_min_intv = 2.0, ppg_A = 0.75, ppg_cal_fact = 240,
-    ecg_ch = 1, ecg_thd = 2.5, ecg_min_intv = 2.0, ecg_A = 0.75, ecg_cal_fact = 240):
+    ecg_ch = 1, ecg_thd = 2.0, ecg_min_intv = 2.0, ecg_A = 0.75, ecg_cal_fact = 240):
     
     #ppg_thd = 1.71
     #ecg_thd = 2.5

@@ -169,18 +169,20 @@ def Create_Watch_Window():
 def Create_Warning_Lv1_Window():
     window2 = tk.Tk()
     window2.title("Second UI")
+    #watch_Window.geometry('1600x960')
 
     def On_Button_Click():
         Set_Debug_Lv1_Flag_Deactive()
         window2.destroy()
 
     # 경고 메시지 출력
-    warning_message = tk.Label(window2, text="조심하세요!! 지금 졸고 계십니다!!!", font=("Arial", 30))
-    warning_message.grid(row=0, column=1)
+    warning_message = tk.Label(window2, text="운전자 상태 이상이 감지되었습니다. \n 괜찮으시면, 버튼을 눌러주세요!!!", font=("Arial", 60))
+    warning_message.grid(row=0, column=0)
 
     # 버튼
-    button = tk.Button(window2, text="PushButton", command=On_Button_Click)
-    button.grid(row=0, column=0)
+    button = tk.Button(window2, text="PushButton", font=("Arial", 60),bg='lightgray',command=On_Button_Click)
+    button.grid(row=1, column=0)
+    #button.configure(width=100, height)
 
     window2.mainloop()
 

@@ -105,7 +105,7 @@ def Show_Window(level):
         thread_window.start()
         
 
-Show_Window('Lv2')
+#Show_Window('Lv2')
 # Show_Window('Lv3')
 # Show_Window('Remote_Select')
 

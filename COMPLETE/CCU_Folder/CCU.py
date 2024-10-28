@@ -1,4 +1,5 @@
 #import
+#import
 import sys, os
 import RPi.GPIO as GPIO #RPi.GPIO 라이브러리를 GPIO로 사용
 import time

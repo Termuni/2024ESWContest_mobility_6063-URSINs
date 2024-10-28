@@ -28,9 +28,9 @@ dt = gpiozero.Button(DT_PIN)
 def blink_led(led, stop_event):
     while not stop_event.is_set():
         led.on()  # LED ON
-        time.sleep(1)
+        time.sleep(0.3)
         led.off()  # LED OFF
-        time.sleep(1)
+        time.sleep(0.3)
 
 # 로터리 인코더 카운트 처리 함수
 def handle_encoder(clk, dt):
@@ -71,7 +71,7 @@ def control_lv_belt(belt_put_switch, led, clk, dt, stop_event):
         stop_event.set()
         if thread is not None:
             thread.join()
-        led.off()
+        led.on()
     elif not belt_put_switch.is_pressed and Lv_Belt == 0:
         Lv_Belt = 1
         print("Lv_Belt set to 1")
@@ -79,7 +79,7 @@ def control_lv_belt(belt_put_switch, led, clk, dt, stop_event):
         stop_event.set()
         if thread is not None:
             thread.join()
-        led.on()
+        led.off()
         handle_encoder(clk, dt)
         if time.time() - last_change_time > 5:
             count = 0

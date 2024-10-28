@@ -37,8 +37,8 @@ alert_display_duration = 3  # 경고 메시지 표시 시간 (초)
 
 # 얼굴 기울기와 거리 계산에 필요한 상수
 HEAD_TILT_THRESHOLD = 1.5  # 얼굴 기울기 임계값 (라디안 단위)
-SHOULDER_FACE_DISTANCE_THRESHOLD = 0.43  # 어깨와 얼굴 사이의 거리 임계값 (얼굴이 어깨에 가까울 때)
-
+SHOULDER_FACE_DISTANCE_THRESHOLD = 0.3  # 어깨와 얼굴 사이의 거리 임계값 (얼굴이 어깨에 가까울 때)
+#0.43
 global send_flag
 
 
@@ -66,9 +66,9 @@ last_clk_state = None  # 로터리 엔코더 CLK 핀의 마지막 상태
 # LED를 깜빡이는 함수 (블로킹 방식)
 def blink_led(led):
     led.on()  # LED ON
-    time.sleep(1)
+    time.sleep(0.3)
     led.off()  # LED OFF
-    time.sleep(1)
+    time.sleep(0.3)
 
 # 로터리 인코더 카운트 처리 함수
 def handle_encoder(clk, dt):
@@ -106,12 +106,12 @@ def control_lv_belt():
     if belt_put_switch.is_pressed:
         Lv_Belt = 0
         count = 0
-        led.off()  # LED OFF
+        led.on()  # LED OFF
     elif not belt_put_switch.is_pressed and Lv_Belt == 0:
         Lv_Belt = 1
         print("Lv_Belt set to 1")
     elif Lv_Belt == 1:
-        led.on()  # LED ON
+        led.off()  # LED ON
         handle_encoder(clk, dt)
         if time.time() - last_change_time > 5:
             count = 0
@@ -383,7 +383,7 @@ def process_frame(frame, face_mesh, pose, eye_closed_start_time, drowsiness_scor
 
         # 얼굴과 어깨 사이의 거리 계산
         face_shoulder_distance = calculate_face_shoulder_distance(face_landmarks, pose_landmarks)
-
+        
         # 각 조건별로 점수 계산
         drowsiness_scores['ear_score'], eye_closed_start_time, last_eye_open_time = calculate_ear_score(
             avg_ear, eye_closed_start_time, drowsiness_scores['ear_score'], last_eye_open_time
@@ -662,7 +662,7 @@ def main():
             head_tilt_score_label.config(text =f"Head Tilt Score : {int(drowsiness_scores['head_tilt_score'])}")
             face_shoudler_score_label.config(text =f"Face Shoudler Score : {int(drowsiness_scores['face_shoulder_score'])}")
             total_drowsiness_score_label.config(text =f"Total Drowsiness Score : {int(total_drowsiness_score)}")
-   
+            
             sent_message_label.config(text=f"SENT MESSAGE")
             ppg_lv_sent_label.config(text =f"PPG Level : {ppg_lv}")
             ecg_lv_sent_label.config(text =f"ECG Level : {ecg_lv}")

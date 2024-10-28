@@ -22,9 +22,10 @@ def Send_Data(ser, data = '0'):
     data = data + '\n'
     if isinstance(ser, serial.Serial):
         ser.write(data.encode('utf-8'))  # 데이터를 바이트 형태로 인코딩하여 전송
-        print(f"Sent: {data}")  # 전송된 데이터 출력
+        #print(f"UART Sent: {data}")  # 전송된 데이터 출력
     else:
-        print(f"{ser} is not Serial!")
+        p=0
+        #print(f"{ser} is not Serial!")
 
 
 def Receive_Data(ser):
@@ -38,9 +39,10 @@ def Receive_Data(ser):
         if ser.in_waiting > 0:  # 수신된 데이터가 있는지 확인
             data = ser.readline().decode('utf-8').strip()  # 수신된 데이터를 문자열로 디코딩
             if data:
-                print(f"Received: {data}")  # 수신된 데이터 출력
+                #print(f"UART Received: {data}")  # 수신된 데이터 출력
                 return data
-    print(f"{ser} is not Serial!")
+    #print("")
+    #print(f"{ser} is not Serial!")
     return '0'
 
 
@@ -65,7 +67,8 @@ def Master_COM(ser, data=None):
         response = Receive_Data(ser)  # 슬레이브의 응답 수신
         return response
     else:
-        print(f"{ser} is not Serial!")
+        print("")
+        #print(f"{ser} is not Serial!")
 
 def Slave_COM(ser, data=None):
     """
@@ -79,4 +82,5 @@ def Slave_COM(ser, data=None):
         Send_Data(ser, data)  # 응답 데이터 전송
         return message
     else:
-        print(f"{ser} is not Serial!")
+        print("")
+        #print(f"{ser} is not Serial!")

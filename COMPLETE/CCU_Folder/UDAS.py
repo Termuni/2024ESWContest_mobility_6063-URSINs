@@ -56,8 +56,9 @@ class Racing_Wheel:
             if event.type == pygame.JOYAXISMOTION:
                 if event.axis == 0:
                     self.status = 0
-#                    self.wheel_Value[0] = max(1150, min(1850, ((50*(event.value* 10)) + 1500)))
-                    self.wheel_Value[0] = max(1150, min(1850, (1500 - (50*(event.value* 10)))))
+#                    self.wheel_Value[0] = max(2000, min(1800, ((50*(event.value* 10)) + 1500)))
+                    self.wheel_Value[0] = max(750, min(2250, (1500 - (75*(event.value* 10)))))
+                    #(1150,1850,50)
                 elif event.axis == 2:
                     self.status = 2
                     self.wheel_Value[1] = max(0, self.wheel_Value[1] - int(event.value *5 +5))

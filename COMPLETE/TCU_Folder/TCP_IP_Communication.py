@@ -28,7 +28,7 @@ def Init_Client_Socket(HOST = '0.0.0.0', PORT = 9091):
 
 def Receive_Socket(conn):
     data = conn.recv(1024)
-    print("Client : ", data.decode())
+    #print("Client : ", data.decode())
     return data
 
 def Send_Socket(conn, data = "a"):

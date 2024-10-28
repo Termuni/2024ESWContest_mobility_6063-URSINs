@@ -1,0 +1,17 @@
+라즈베리파이 부팅시 작동 필요 내용 정리
+1. CCU : sudo pigpiod
+
+라즈베리파이 한번 script 실행으로 모든 명령어 실행하기 -> 쉘 스크립트 사용
+생성방법 : 확장자 .sh 로 파일 만들고, sudo vim ~~.sh 로 편집
+1. CCU : sudo python3 /home/pi/CCU_Folder/CCU.py
+2. TCU
+2-1. sudo openvpn vpn 1024
+2-2. 내부 캠 스트리밍
+2-3. 외부 캠 스트리밍
+2-4. sudo python3 /home/pi/TCU_Folder/TCU.py
+2-5. sudo python3 /home/pi/TCU_Folder/Main_onlyGPS.py
+3. DMU : sudo python3 /home/pi/project/DMU.py
+4. RmtCenter
+4-1. sudo openvpn vpn 1024
+4-2. sudo python3 /home/pi/Center_Folder/Main_onlyGPS.py
+4-3. sudo python3 /home/pi/Center_Folder/Rmt_Center.py
