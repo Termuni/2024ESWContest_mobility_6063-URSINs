@@ -5,6 +5,7 @@ import threading
 
 #==================CUSTOM IMPORT==================
 import TCP_IP_Communication as wlcom
+import UART_Communication as wcom
 import RC_Wheel as wheel
 import Streaming as strm
 import Rmt_Window as wind
@@ -13,7 +14,8 @@ import GPS_Center as gps
 #==================CUSTOM IMPORT==================
 
 def Init_Rmt_Center():
-    global server_Socket, data_to_TCU, data_from_TCU
+    global server_Socket, data_to_TCU, data_from_TCU, data_to_SubCenter
+    global cTs_Ser
     global wheel_value, warning_LV
     global window_active_lv2, window_active_lv3, is_streaming_lv2, is_streaming_lv3
     global streaming_url_lv2, vd_cap_lv2, streaming_url_lv3, vd_cap_lv3
@@ -22,9 +24,9 @@ def Init_Rmt_Center():
     TCU_IP = '10.211.173.3'
     TCU_PORT_Lv2CAM = 5000
 
-    
     # . Init Communication
     server_Socket = wlcom.Init_Server_Socket()
+    cTs_Ser = wcom.Init_UART()
     data_to_TCU = "0"
     data_from_TCU = None
     
@@ -69,6 +71,7 @@ try:
         #i+=1
         data_from_TCU = wlcom.Receive_Socket(server_Socket).decode()   #TCU한테 온 데이터 [응급레벨, 위도, 경도] 
         tcu_datas = dp.Trans_Str_To_Arr(data_from_TCU)                 #데이터 정제 (문자열 -> 리스트)
+        data_to_SubCenter = data_from_TCU
         
         time.sleep(0.01)
         time_now = time.time()
@@ -84,9 +87,8 @@ try:
         
         
         if warning_LV == 2:                              #=== [ 응급레벨 2일때 ]===
-            if not window_active_lv2:                      # 윈도우가 없을 때 (중복 방지)
+            if wind.Get_LV2_Window_State():                      # 윈도우가 없을 때 (중복 방지)
                 wind.Show_Window('Lv2')                      # 레벨2 UI 켜기. 
-                window_active_lv2 = True                     # 중복 방지로, UI 실행 = True
             print("[WARNING] Driver is danger in now")
         
         if wind.Get_Monitoring_Driver_State():          #===[ 운전자 모니터링 버튼 눌렀을때 ]===
@@ -137,6 +139,8 @@ try:
             data_to_TCU = dp.Trans_Arr_To_Str(data_set) # TCU로 보낼 데이터 정제
         
         
+        #Data to SubCenter and TCU
+        wcom.Send_Data(cTs_Ser, data_to_SubCenter)
         wlcom.Send_Socket(server_Socket, data_to_TCU)   # TCU로 데이터 보냄.
         
         

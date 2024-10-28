@@ -10,8 +10,8 @@ global map_file
 map_file = 'map.html'
 
 global latitude, longitude
-latitude = 37.5665
-longitude = 126.9780
+latitude = 37.5768
+longitude = 126.8981
 
 # 지도 업데이트 함수
 def Update_Map(lat, lon):
@@ -22,7 +22,7 @@ def Update_Map(lat, lon):
 # 좌표가 변화하는 지도와 함께 실행하는 함수
 def Window_GPS():
     # 초기 지도 생성
-    Update_Map(37.5665, 126.9780)
+    Update_Map(37.5768, 126.8981)
     map_file = 'map.html'
     # PyWebView 창 생성
     window = webview.create_window('GPS Map Viewer', 'file://' + os.path.realpath(map_file))

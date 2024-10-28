@@ -1,0 +1,1 @@
+sudo python3 /home/pi/project/DMU_final.py

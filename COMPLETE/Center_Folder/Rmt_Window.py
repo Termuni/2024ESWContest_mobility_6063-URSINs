@@ -2,9 +2,10 @@ import threading
 import tkinter as tk
 from tkinter import messagebox
 
-global monitor_driver_en, remote_drive_en, remote_Forced_Activate
+global monitor_driver_en, remote_drive_en, remote_Forced_Activate, lv2_wind_en
 monitor_driver_en = False
 remote_drive_en = False
+lv2_wind_en = False
 remote_forced_activate = 0
 
 # 운전자 위험 알람 UI 창
@@ -12,12 +13,14 @@ def Create_Warning_Lv2_Window():
     lv2_window = tk.Tk()
     lv2_window.title("WARNING_ALART")
     lv2_window.geometry('520x280+0+0')
-
+    Set_LV2_Window_Activate()
+    
     def On_Confirm_Click():
         Set_Monitoring_Driver_Activate()
         lv2_window.destroy()
 
     def On_Exit_Click():
+        Set_LV2_Window_Deactivate()
         lv2_window.destroy()
 
 
@@ -127,6 +130,18 @@ def Set_Monitoring_Driver_Deactivate():
     global monitor_driver_en
     monitor_driver_en = False    
 
+def Get_LV2_Window_State():
+    global lv2_wind_en
+    return lv2_wind_en
+
+def Set_LV2_Window_Activate():
+    global lv2_wind_en
+    lv2_wind_en = True
+
+def Set_LV2_Window_Deactivate():
+    global lv2_wind_en
+    lv2_wind_en = False
+    
 #endregion LV2
 
 #region LV3

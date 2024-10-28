@@ -1,0 +1,1 @@
+sudo python3 /home/pi/Center_Folder/SubCenter.py
