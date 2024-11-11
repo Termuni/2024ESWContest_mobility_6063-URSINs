@@ -1,5 +1,6 @@
 import threading
 import tkinter as tk
+import time
 from tkinter import messagebox
 
 global lv1_activate, debug_mode_en, d_ppg_lv, d_ecg_lv, d_cam_lv, d_pedal_err, d_warning_score, d_warning_lv
@@ -165,6 +166,27 @@ def Create_Watch_Window():
     
     watch_Window.mainloop()
 
+def Create_Accel_Warning_Window():
+    accel_Window = tk.Tk()
+    accel_Window.title("ACCEL WARNING")
+    accel_Window.geometry('560x240+400+240')
+    count = 0
+    frame_1=tk.Frame(accel_Window, width=540, height=220, bg='#BFBFBF',bd=10,relief="ridge").place(x=10, y=10)
+	
+    tk.Label(frame_1, text="엑셀을 100%\n밟고 계십니다!",font=("Helvetica",60),bg='#BFBFBF').place(x=30, y=30)
+    
+    def Update_DATA():
+        nonlocal count
+        # 1초마다 재귀 호출로 업데이트를 반복 (1000 ms = 1초)
+        accel_Window.after(1000, Update_DATA)
+        count += 1
+        if count == 3:
+            accel_Window.destroy()
+        
+    Update_DATA()
+    
+    accel_Window.mainloop()
+
 # 위험Lv1 UI 창
 def Create_Warning_Lv1_Window():
     window2 = tk.Tk()
@@ -199,6 +221,12 @@ def Show_Window(level):
             args=()
         )
         thread_watch.start()
+    elif level == 'Accel':
+        thread_accel = threading.Thread(
+            target=Create_Accel_Warning_Window,
+            args=()
+        )
+        thread_accel.start()
     elif level == 'Lv1':
         Set_Debug_Lv1_Flag_Active()
         thread_lv1 = threading.Thread(
@@ -206,9 +234,8 @@ def Show_Window(level):
             args=()
         )
         thread_lv1.start()
-        
 
-# Show_Window('Watch')
+Show_Window('Accel')
 
 # 플래그 및 값 GET/SET 함수들
 #region API Set
