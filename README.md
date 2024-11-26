@@ -1,6 +1,9 @@
 # URSINs
 ### Urgent Response System In-Need Senior drivers
 
+## 개요
+!<img width="372" alt="URSINs" src="https://github.com/user-attachments/assets/dc4a3741-f795-4625-9f0d-32911cd180b7">
+
 이 Git은 임베디드 SW 공모전을 위해 생성된 것으로 구성은 다음과 같습니다.
 
 COMPLETE -> 각각의 MCU들에 들어갈 코드가 들어가있는 폴더
