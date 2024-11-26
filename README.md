@@ -58,6 +58,7 @@
 운전자가 위험하다고 판단 된 경우, 원격 운전을 시행합니다. 
 
 ### 시연 영상
+https://youtu.be/tdjMa8HQYMU
 [![Video Label](http://img.youtube.com/vi/tdjMa8HQYMU/0.jpg)](https://youtu.be/tdjMa8HQYMU)
 
 ## 작품 소개
@@ -101,8 +102,7 @@
 
 차량의 **원격 운전을 위한 센터**로, TCU에서 정보를 받아옵니다.
 
-운전자 응급 단계, 위치 정보(GPS), 그리고 내/외부 상황에 대해 판단하고 처리합니다.
-
+운전자 응급 단계, 위치 정보(GPS), 그리고 내/외부 상황에 대해 판단하고 처리합니다.
 
 ### 응급 단계 계산 로직
 <img width="900" alt="응급단계 계산 로직" src="https://github.com/user-attachments/assets/1898bb15-5526-4d5e-99b2-d3d3426e06d4">
