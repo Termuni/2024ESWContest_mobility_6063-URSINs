@@ -2,11 +2,20 @@
 ### Urgent Response System In-Need Senior drivers
 <img width="372" alt="URSINs" src="https://github.com/user-attachments/assets/dc4a3741-f795-4625-9f0d-32911cd180b7">
 
+고령 운전자를 위한 응급상황 대응 시스템
+
 ## 개요
 <img width="851" alt="개발 배경" src="https://github.com/user-attachments/assets/56534866-785e-4a13-8424-6804683e36c8">
 
+최근 초고령화사회로 인한 고령운전자 증가 및 사고가 증가하고 있습니다.
+국내 현재 고령 운전자 500만명이며, 2040년에는 1300명으로 증가를 예상하고 있습니다.
+최근 5년 고령운전자의 추돌 사고는 연 평균 15% 증가하였으며, 치사율은 전체 연령대 평균의 2배입니다.
+
 ### 해결 타겟
 <img width="866" alt="해결 타겟" src="https://github.com/user-attachments/assets/27b086fb-a20d-4db9-b1d0-ed6491696387">
+
+이러한 사고의 원인을 저희는 심정지, 뇌경색, 페달 오조작으로 판단하였습니다.
+따라서 신체 이상과 페달 오조작을 방지하기 위해 솔루션을 준비하였습니다.
 
 ## 시스템 소개
 ### 운전자 모니터링 시스템
