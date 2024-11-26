@@ -58,7 +58,6 @@
 운전자가 위험하다고 판단 된 경우, 원격 운전을 시행합니다. 
 
 ### 시연 영상
-https://youtu.be/tdjMa8HQYMU
 [![Video Label](http://img.youtube.com/vi/tdjMa8HQYMU/0.jpg)](https://youtu.be/tdjMa8HQYMU)
 
 ## 작품 소개
