@@ -1,11 +1,11 @@
 # URSINs
 ### Urgent Response System In-Need Senior drivers
-<img width="372" alt="URSINs" src="https://github.com/user-attachments/assets/dc4a3741-f795-4625-9f0d-32911cd180b7">
+<img width="800" alt="URSINs" src="https://github.com/user-attachments/assets/dc4a3741-f795-4625-9f0d-32911cd180b7">
 
 고령 운전자를 위한 응급상황 대응 시스템
 
 ## 개요
-<img width="851" alt="개발 배경" src="https://github.com/user-attachments/assets/56534866-785e-4a13-8424-6804683e36c8">
+<img width="800" alt="개발 배경" src="https://github.com/user-attachments/assets/56534866-785e-4a13-8424-6804683e36c8">
 
 최근 초고령화사회로 인한 고령운전자 증가 및 사고가 증가하고 있습니다.
 
@@ -15,7 +15,7 @@
 
 
 ### 해결 타겟
-<img width="866" alt="해결 타겟" src="https://github.com/user-attachments/assets/27b086fb-a20d-4db9-b1d0-ed6491696387">
+<img width="800" alt="해결 타겟" src="https://github.com/user-attachments/assets/27b086fb-a20d-4db9-b1d0-ed6491696387">
 
 이러한 사고의 원인을 저희는 심정지, 뇌경색, 페달 오조작으로 판단하였습니다.
 
@@ -23,7 +23,7 @@
 
 ## 시스템 소개
 ### 운전자 모니터링 시스템
-<img width="852" alt="운전자 모니터링 시스템" src="https://github.com/user-attachments/assets/91b38eac-f657-4646-aea7-b8307dd89e9f">
+<img width="800" alt="운전자 모니터링 시스템" src="https://github.com/user-attachments/assets/91b38eac-f657-4646-aea7-b8307dd89e9f">
 
 저희는 운전자 모니터링 시스템을 개발하였습니다.
 
@@ -33,7 +33,7 @@
 
 
 ### 응급 단계별 동작도
-<img width="917" alt="응급 단계별 동작도" src="https://github.com/user-attachments/assets/b2d2273e-cdcb-4536-ba5a-027fe22925c7">
+<img width="800" alt="응급 단계별 동작도" src="https://github.com/user-attachments/assets/b2d2273e-cdcb-4536-ba5a-027fe22925c7">
 
 **0단계**(정상 운전 상태)
 
@@ -62,7 +62,7 @@
 
 ## 작품 소개
 ### HW 구성도
-<img width="890" alt="HW 구성도" src="https://github.com/user-attachments/assets/33d2dfee-3c63-4c39-8aa2-6bdba6b4a7cd">
+<img width="800" alt="HW 구성도" src="https://github.com/user-attachments/assets/33d2dfee-3c63-4c39-8aa2-6bdba6b4a7cd">
 
 저희의 HW 구성도입니다. 
 
@@ -115,22 +115,20 @@
 
 ## 가능성
 ### 실제 적용 방안
-<img width="478" alt="활용가능성" src="https://github.com/user-attachments/assets/645948e8-b729-4cd4-b18f-cafe3a458c6b">
+<img width="800" alt="활용가능성" src="https://github.com/user-attachments/assets/645948e8-b729-4cd4-b18f-cafe3a458c6b">
 
 위에서 소개한 시스템들은 모두 신규 차량에 이미 있는 시스템으로, **SW 중심 개발**이 가능합니다.
 즉, **HW 설계 비용이 낮습니다**.
 
 ### 국내 원격 운전
-<img width="154" alt="경찰청" src="https://github.com/user-attachments/assets/5682cbfd-acba-42bd-9a27-85a1874741d8">
+<img width="154" alt="경찰청" src="https://github.com/user-attachments/assets/5682cbfd-acba-42bd-9a27-85a1874741d8"> **경찰청** '24.06 <**원격운전 통행 안정성 제고**를 위한 용역> 시작
 
-**경찰청** '24.06 <**원격운전 통행 안정성 제고**를 위한 용역> 시작
-
-<img width="154" alt="쏘카" src="https://github.com/user-attachments/assets/a44f71c0-0180-4c8f-8dd7-e2372505c13d">
-
-쏘카 "25년 상반기 원격운전 도입" (렌터카 원격 배달/회수)
+<img width="154" alt="쏘카" src="https://github.com/user-attachments/assets/a44f71c0-0180-4c8f-8dd7-e2372505c13d"> 쏘카 "25년 상반기 원격운전 도입" (렌터카 원격 배달/회수)
 
 ### 기대 효과
+
 **직접적 효과** : 사고 피해 대폭 절감
+
 **간접적 효과** : 고령자 이동권 보장, 차량 수요자 감소 방지 및 고령사회 자동차 산업 지속 가능
 
 ## 기타 정보
